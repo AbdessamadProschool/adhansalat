@@ -1,0 +1,52 @@
+{
+  "id": "/",
+  "name": "AdhanSalat",
+  "short_name": "AdhanSalat",
+  "description": "AdhanSalat · La prière est une lumière · Horaires de prière hors ligne",
+  "lang": "fr",
+  "dir": "auto",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#064332",
+  "theme_color": "#064332",
+  "categories": ["lifestyle", "utilities", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Horaires du jour",
+      "short_name": "Aujourd’hui",
+      "description": "Ouvrir les horaires de prière du jour",
+      "url": "/#/home",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calendrier mensuel",
+      "short_name": "Calendrier",
+      "description": "Voir les horaires du mois",
+      "url": "/#/calendar",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

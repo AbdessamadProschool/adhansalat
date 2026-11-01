@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">أذان صلاة</string>
+    <string name="native_diagnostics_title">تشخيص المنبهات</string>
+    <string name="native_diagnostics_subtitle">المنبهات المجدولة فعلياً في النظام</string>
+
+    <string name="channel_adhan">الأذان</string>
+    <string name="channel_adhan_desc">صوت الأذان الذي تشغّله خدمة التشغيل في المقدمة.</string>
+    <string name="channel_pre">تذكير قبل الصلاة</string>
+    <string name="channel_pre_desc">إشعار قصير قبل الصلاة بعدة دقائق.</string>
+    <string name="channel_status">حالة المنبهات</string>
+    <string name="channel_status_desc">المنبهات الفائتة ومعلومات إعادة الجدولة.</string>
+    <string name="channel_ongoing">مواقيت اليوم (شاشة القفل)</string>
+    <string name="channel_ongoing_desc">عرض الصلاة القادمة وموجز اليوم بشكل دائم وغير مزعج.</string>
+    <string name="notif_ongoing_title">الصلاة القادمة: %1$s في %2$s</string>
+
+    <string name="notif_adhan_title">حان وقت صلاة %1$s</string>
+    <string name="notif_adhan_body">الساعة الآن %1$s. اضغط لفتح التطبيق.</string>
+    <string name="notif_pre_title">اقترب وقت %1$s</string>
+    <string name="notif_pre_body">أذان %1$s سيكون في %2$s.</string>
+    <string name="notif_missed_title">منبه فائت: %1$s</string>
+    <string name="notif_missed_body">لم يتمكن منبه %1$s من العمل في وقته (الجهاز مغلق أو المنبه محظور).</string>
+    <string name="notif_missed_late">تأخر %1$d دقيقة · الوقت المحدد %2$s</string>
+    <string name="notif_tz_title">تم تغيير المنطقة الزمنية</string>
+    <string name="notif_tz_body">الجهاز الآن في %2$s لكن المواقيت حُسبت لـ %1$s. افتح أذان صلاة لإعادة حسابها.</string>
+    <string name="notif_stop">إيقاف</string>
+    <string name="notif_diagnostics">التشخيص</string>
+    <string name="notif_fallback_body">افتح التطبيق لمواقيت اليوم.</string>
+    <string name="notif_sound_unavailable">الصوت المخصص غير متاح: إشعار فقط.</string>
+
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+
+    <string name="diag_exact_title">المنبهات الدقيقة</string>
+    <string name="diag_exact_ok">مسموح بها: يمكن للنظام إيقاظ الجهاز في الوقت المحدد.</string>
+    <string name="diag_exact_missing">غير مسموح بها: لا يمكن جدولة أي منبه. اسمح بـ «المنبهات والتذكيرات».</string>
+    <string name="diag_grant">السماح</string>
+    <string name="diag_notif_title">الإشعارات</string>
+    <string name="diag_notif_ok">ممنوحة.</string>
+    <string name="diag_notif_missing">مرفوضة: قد يعمل الأذان لكن لا يظهر شيء.</string>
+    <string name="diag_battery_title">تحسين البطارية</string>
+    <string name="diag_battery_ok">التطبيق مستثنى: لا تتأخر المنبهات.</string>
+    <string name="diag_battery_missing">غير مستثنى: بعض الشركات تؤخر المنبهات. افتح الإعدادات واختر «غير مقيّد».</string>
+    <string name="diag_open_settings">فتح الإعدادات</string>
+    <string name="diag_armed_title">المنبهات المجدولة</string>
+    <string name="diag_armed_none">لا يوجد منبه مخزَّن. افتح تطبيق الويب واختر مدينة.</string>
+    <string name="diag_armed_count">%1$d منبه(s) قادم من أصل %2$d مخزَّن.</string>
+    <string name="diag_last_title">آخر نتيجة</string>
+    <string name="diag_last_none">لم يعمل أي منبه منذ التثبيت.</string>
+    <string name="diag_sync_title">آخر مزامنة أصلية</string>
+    <string name="diag_sync_none">لا توجد مزامنة أصلية مسجلة.</string>
+    <string name="diag_sync_body">%1$s · %2$d مجدول، %3$d متجاهل من أصل %4$d مخزَّن.</string>
+    <string name="diag_sync_deferred">%1$s · غير مجدول (%2$s): %3$d حدث مخزَّن.</string>
+    <string name="diag_sounds_title">الأصوات المستوردة (التخزين الخاص)</string>
+    <string name="diag_sounds_none">لا يوجد صوت مستورد يمكن للمشغّل الأصلي قراءته.</string>
+    <string name="diag_sounds_item">%1$s · %2$d كيلوبايت</string>
+    <string name="diag_test_title">اختبار حقيقي</string>
+    <string name="diag_test_button">اختبار منبه بعد 20 ثانية</string>
+    <string name="diag_test_hint">المنبه مجدول بواسطة AlarmManager وليس بمؤقت JavaScript. اقفل الشاشة: يجب أن يعمل.</string>
+    <string name="diag_test_scheduled">تم جدولة منبه الاختبار. اقفل الشاشة الآن.</string>
+    <string name="diag_test_blocked">غير ممكن: اسمح بالمنبهات الدقيقة أولاً.</string>
+    <string name="diag_stop_audio">إيقاف الصوت</string>
+    <string name="diag_stop_audio_idle">لا يوجد صوت قيد التشغيل.</string>
+    <string name="diag_refresh">تحديث</string>
+    <string name="diag_close">إغلاق</string>
+    <string name="diag_window_note">تُخزَّن المنبهات لمدة 31 يوماً وتُعاد جدولتها بعد كل إعادة تشغيل. افتح التطبيق من وقت لآخر لتمديد المدة.</string>
+    <string name="diag_sound_note">تُنسخ الأصوات المستوردة من تطبيق الويب إلى التخزين الخاص بالتطبيق، لذا يمكن لمنبه أصلي تشغيلها. إذا فشل النسخ يعرض المنبه إشعاراً بدون صوت ويذكر ذلك تشخيص الويب. الأجراس الثلاثة المضمَّنة تعمل أصلياً أيضاً.</string>
+    <string name="widget_spiritual_note">صاحب التطبيق يسألكم صالح الدعاء · نسأل الله أن تكون صدقة جارية</string>
+    <string name="widget_next_prayer_label">الصلاة القادمة</string>
+</resources>

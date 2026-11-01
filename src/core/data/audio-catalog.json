@@ -1,0 +1,406 @@
+{
+  "generatedAt": "2026-10-28T19:52:13.092Z",
+  "generator": "scripts/process-audio.mjs",
+  "filterChain": {
+    "loudness": "aformat=channel_layouts=mono,highpass=f=70,afftdn=nr=6:nf=-30,loudnorm=I=-18:TP=-2:LRA=9",
+    "trim": "silenceremove=start_periods=1:start_duration=0.25:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_duration=0.25:start_threshold=-45dB,areverse",
+    "note": "Two passes: loudness/PCM intermediate, then trim+MP3, because areverse and loudnorm exhaust memory in one graph."
+  },
+  "encoding": {
+    "codec": "libmp3lame",
+    "sampleRate": 22050,
+    "channels": 1,
+    "bitrateKbps": 32
+  },
+  "source": "Eight MP3 files supplied by the project owner (azan1/2/5/6/7/9/13/14.mp3).",
+  "tagArtist": "www.islamcan.com",
+  "license": "unknown",
+  "redistributionAuthorized": false,
+  "licenseNote": "The source files carry no licence and no written authorisation. They are kept locally for evaluation only. The PWA and the APK do not contain them: production builds fail if an MP3 is placed under public/ or res/raw/. Do not distribute these recordings until the rights holder agrees in writing.",
+  "originals": "audio-originals/ (untouched sources)",
+  "totalProcessedBytes": 5589408,
+  "tracks": [
+    {
+      "number": 1,
+      "id": "adhan-1",
+      "name": "Adhan 1",
+      "publicPath": "/audio/adhan/azan-1.mp3",
+      "androidRaw": "adhan_1",
+      "sourceName": "azan1.mp3",
+      "source": {
+        "bytes": 670770,
+        "sha256": "bf443115a1c50d56176f29569cf210fbce018dd34f4e7c2f48f46340e4632f75",
+        "durationSec": 133.3284,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "title": "Adhan",
+          "artist": "www.islamcan.com",
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -17.9,
+        "maxDb": -4.7,
+        "loudnessLufs": -14.46,
+        "truePeakDb": -4.73,
+        "silenceSec": 0,
+        "silencePercent": 0
+      },
+      "processed": {
+        "bytes": 528005,
+        "sha256": "57cd506a352276798fb69a2bec91b119f52f79d84e2ababe7aa91c0401ef3615",
+        "durationSec": 131.94449,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -18.9,
+        "maxDb": -4.8,
+        "loudnessLufs": -18.59,
+        "truePeakDb": -4.81,
+        "silenceSec": 0.8,
+        "silencePercent": 0.6
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-1.mp3"
+    },
+    {
+      "number": 2,
+      "id": "adhan-2",
+      "name": "Adhan 2",
+      "publicPath": "/audio/adhan/azan-2.mp3",
+      "androidRaw": "adhan_2",
+      "sourceName": "azan2.mp3",
+      "source": {
+        "bytes": 558644,
+        "sha256": "3d9718380c5de37ed1077e87e7e13c202343439ae1527b1bc4d50d811bcbf9cb",
+        "durationSec": 186.142667,
+        "bitrateKbps": 24,
+        "codec": "mp3",
+        "sampleRate": 8000,
+        "channels": 2,
+        "tags": {
+          "title": "www.islamcan.com",
+          "artist": "www.islamcan.com",
+          "album": "www.islamcan.com",
+          "date": "0",
+          "comment": "www.islamcan.com",
+          "genre": "Other"
+        },
+        "meanDb": -17.8,
+        "maxDb": -2.6,
+        "loudnessLufs": -13.37,
+        "truePeakDb": -2.12,
+        "silenceSec": 40.3,
+        "silencePercent": 21.6
+      },
+      "processed": {
+        "bytes": 729984,
+        "sha256": "e2dd226ee7b8eacfb72dfd01d10c0f621c5964d8b99c427178c1ce571c01e402",
+        "durationSec": 182.439184,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -20.1,
+        "maxDb": -3.1,
+        "loudnessLufs": -18.77,
+        "truePeakDb": -3.07,
+        "silenceSec": 39.1,
+        "silencePercent": 21.4
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-2.mp3"
+    },
+    {
+      "number": 5,
+      "id": "adhan-5",
+      "name": "Adhan 5",
+      "publicPath": "/audio/adhan/azan-5.mp3",
+      "androidRaw": "adhan_5",
+      "sourceName": "azan5.mp3",
+      "source": {
+        "bytes": 644473,
+        "sha256": "0474a786bf207c074f05269ea8072b648379d37e02734eaca0267c5317ebced2",
+        "durationSec": 128.8882,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -18.7,
+        "maxDb": -5,
+        "loudnessLufs": -13.83,
+        "truePeakDb": -5.03,
+        "silenceSec": 0,
+        "silencePercent": 0
+      },
+      "processed": {
+        "bytes": 506585,
+        "sha256": "5e18bd18de212d7a083f714bd36f503bea1997925b1497b58261c80340ccee61",
+        "durationSec": 126.589388,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -19.8,
+        "maxDb": -3.7,
+        "loudnessLufs": -18.1,
+        "truePeakDb": -3.66,
+        "silenceSec": 3.8,
+        "silencePercent": 3
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-5.mp3"
+    },
+    {
+      "number": 6,
+      "id": "adhan-6",
+      "name": "Adhan 6",
+      "publicPath": "/audio/adhan/azan-6.mp3",
+      "androidRaw": "adhan_6",
+      "sourceName": "azan6.mp3",
+      "source": {
+        "bytes": 592620,
+        "sha256": "ff2e385d36af274190be97a7ed8e140c9bccbbfec5be8b3fe66dc982d1232b76",
+        "durationSec": 118.5176,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -16.8,
+        "maxDb": -2.5,
+        "loudnessLufs": -12.79,
+        "truePeakDb": -2.52,
+        "silenceSec": 0,
+        "silencePercent": 0
+      },
+      "processed": {
+        "bytes": 469491,
+        "sha256": "0b608fe2b67d83d3d59770f533dbf433ee98404b3a25cb815a5741cb298e3e4d",
+        "durationSec": 117.315918,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -18.9,
+        "maxDb": -3.6,
+        "loudnessLufs": -17.93,
+        "truePeakDb": -3.56,
+        "silenceSec": 15.9,
+        "silencePercent": 13.5
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-6.mp3"
+    },
+    {
+      "number": 7,
+      "id": "adhan-7",
+      "name": "Adhan 7",
+      "publicPath": "/audio/adhan/azan-7.mp3",
+      "androidRaw": "adhan_7",
+      "sourceName": "azan7.mp3",
+      "source": {
+        "bytes": 864293,
+        "sha256": "919b65c1b86b0c6c39dbcd6c2683357f50156e5d1393324be53e3137a655cccd",
+        "durationSec": 172.8522,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -16.2,
+        "maxDb": -2,
+        "loudnessLufs": -11.7,
+        "truePeakDb": -1.91,
+        "silenceSec": 0,
+        "silencePercent": 0
+      },
+      "processed": {
+        "bytes": 681709,
+        "sha256": "0d177ab39b78e8d96a15acb89eb94276b70af8ffa41453744b9fbdcf4bda7241",
+        "durationSec": 170.370612,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -18.9,
+        "maxDb": -5.2,
+        "loudnessLufs": -17.58,
+        "truePeakDb": -5.21,
+        "silenceSec": 1.9,
+        "silencePercent": 1.1
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-7.mp3"
+    },
+    {
+      "number": 9,
+      "id": "adhan-9",
+      "name": "Adhan 9",
+      "publicPath": "/audio/adhan/azan-9.mp3",
+      "androidRaw": "adhan_9",
+      "sourceName": "azan9.mp3",
+      "source": {
+        "bytes": 681548,
+        "sha256": "b7f20c4045f633b27f62e7a8928c823f9ea560cdf925d3671bee3c7578542354",
+        "durationSec": 227.110667,
+        "bitrateKbps": 24,
+        "codec": "mp3",
+        "sampleRate": 8000,
+        "channels": 2,
+        "tags": {
+          "title": "www.islamcan.com",
+          "artist": "www.islamcan.com",
+          "album": "www.islamcan.com",
+          "date": "0",
+          "comment": "www.islamcan.com",
+          "genre": "Other"
+        },
+        "meanDb": -17.1,
+        "maxDb": -1.9,
+        "loudnessLufs": -12.76,
+        "truePeakDb": -1.92,
+        "silenceSec": 43.9,
+        "silencePercent": 19.3
+      },
+      "processed": {
+        "bytes": 898944,
+        "sha256": "0c94fa51e027ef34813d976ef5f17ade7dc7046fd044f11455607787d079246d",
+        "durationSec": 224.679184,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -19.4,
+        "maxDb": -2.7,
+        "loudnessLufs": -18.26,
+        "truePeakDb": -2.64,
+        "silenceSec": 44,
+        "silencePercent": 19.6
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-9.mp3"
+    },
+    {
+      "number": 13,
+      "id": "adhan-13",
+      "name": "Adhan 13",
+      "publicPath": "/audio/adhan/azan-13.mp3",
+      "androidRaw": "adhan_13",
+      "sourceName": "azan13.mp3",
+      "source": {
+        "bytes": 1185207,
+        "sha256": "4462ddc1ba9f2f1da74c48e79da31ad4d3aceeb8ef81d701be2a8eb0d0243b8f",
+        "durationSec": 237.035,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -12.2,
+        "maxDb": 0,
+        "loudnessLufs": -5.9,
+        "truePeakDb": 1.61,
+        "silenceSec": 1.5,
+        "silencePercent": 0.6
+      },
+      "processed": {
+        "bytes": 934679,
+        "sha256": "006ce1ea3440b01ee47d80a30df08e4e861abfc39a84b9c58c112b1fdfbc6865",
+        "durationSec": 233.613061,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -20.9,
+        "maxDb": -3.7,
+        "loudnessLufs": -17.71,
+        "truePeakDb": -3.64,
+        "silenceSec": 67.4,
+        "silencePercent": 28.8
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-13.mp3"
+    },
+    {
+      "number": 14,
+      "id": "adhan-14",
+      "name": "Adhan 14",
+      "publicPath": "/audio/adhan/azan-14.mp3",
+      "androidRaw": "adhan_14",
+      "sourceName": "azan14.mp3",
+      "source": {
+        "bytes": 1058905,
+        "sha256": "fd9626c0cf032e498f5e3d828092c1a96d16d7e3a6f27174ddae6b5e51130525",
+        "durationSec": 211.7746,
+        "bitrateKbps": 40,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 2,
+        "tags": {
+          "encoded_by": "Lavf51.12.1"
+        },
+        "meanDb": -13.3,
+        "maxDb": 0,
+        "loudnessLufs": -8.54,
+        "truePeakDb": 1.68,
+        "silenceSec": 1.8,
+        "silencePercent": 0.9
+      },
+      "processed": {
+        "bytes": 840011,
+        "sha256": "004615ae5bdedd1b3e4658f58c4bc3e81449f2718811e60d8e5e28f39575e0b3",
+        "durationSec": 209.946122,
+        "bitrateKbps": 32,
+        "codec": "mp3",
+        "sampleRate": 22050,
+        "channels": 1,
+        "tags": {
+          "encoder": "Lavf58.24.101"
+        },
+        "meanDb": -19.4,
+        "maxDb": -3.1,
+        "loudnessLufs": -17.82,
+        "truePeakDb": -3.14,
+        "silenceSec": 0,
+        "silencePercent": 0
+      },
+      "bundled": false,
+      "localCopy": "audio-cleaned/azan-14.mp3"
+    }
+  ],
+  "bundleInApp": false,
+  "localCopyDir": "audio-cleaned/"
+}

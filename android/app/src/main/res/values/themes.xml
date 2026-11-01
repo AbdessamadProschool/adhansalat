@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Azan.Starting" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:statusBarColor">@color/azan_green</item>
+        <item name="android:navigationBarColor">@color/azan_green</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.Azan" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/azan_ivory</item>
+        <item name="android:statusBarColor">@color/azan_green</item>
+        <item name="android:navigationBarColor">@color/azan_green</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

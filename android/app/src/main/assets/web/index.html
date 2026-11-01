@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>AdhanSalat · La prière est une lumière</title>
+    <meta
+      name="description"
+      content="AdhanSalat : Horaires de prière précis calculés localement, boussole Qibla, Adhkar, jeûne et alarmes sans aucune publicité."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-4b+Hz0GJYy9+1eLW6XoDXcOD1AZXNfcODnwX/bFfPcU='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"
+    />
+    <meta name="theme-color" content="#064332" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="AdhanSalat" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link
+      rel="preload"
+      href="/fonts/tajawal-arabic-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/ibm-plex-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('azan.settings.v1');
+          var mode = raw ? (JSON.parse(raw).theme || 'auto') : 'auto';
+          var dark =
+            mode === 'dark' ||
+            (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', dark ? '#0C1512' : '#F7F8F4');
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CQfSeBez.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-yLYqV6Xc.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Aller au contenu · Skip to content · انتقل إلى المحتوى</a>
+    <div id="app" class="app-shell">
+      <div class="boot" role="status" aria-live="polite">
+        <svg
+          class="boot-art"
+          viewBox="0 0 240 160"
+          fill="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M116 34a42 42 0 1 0 44 58 34 34 0 0 1-44-58z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <path
+            d="m174 42 2.4 5.6 5.9.5-4.4 4 1.3 5.9-5.2-3.1-5.2 3.1 1.3-5.9-4.4-4 5.9-.5z"
+            fill="currentColor"
+            opacity=".85"
+          />
+          <path
+            d="M30 132h180M62 132v-16M96 132v-8M130 132v-22M164 132v-12M198 132v-20"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            opacity=".45"
+          />
+        </svg>
+        <p>Chargement des horaires… · Loading prayer times… · جارٍ تحميل المواعيد…</p>
+      </div>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <noscript>
+      <p style="padding: 24px; font-family: system-ui, sans-serif">
+        Azan Global nécessite JavaScript pour calculer les horaires de prière sur votre appareil. ·
+        Azan Global requires JavaScript to compute prayer times on your device.
+      </p>
+    </noscript>
+  </body>
+</html>

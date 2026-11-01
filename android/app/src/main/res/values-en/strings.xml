@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">أذان صلاة</string>
+    <string name="native_diagnostics_title">Native diagnostics</string>
+    <string name="native_diagnostics_subtitle">Alarms actually armed in the system</string>
+
+    <string name="channel_adhan">Adhan</string>
+    <string name="channel_adhan_desc">Adhan audio played by the foreground service.</string>
+    <string name="channel_pre">Pre-prayer reminder</string>
+    <string name="channel_pre_desc">A short notification a few minutes before the prayer.</string>
+    <string name="channel_status">Alarm status</string>
+    <string name="channel_status_desc">Missed alarms and rescheduling information.</string>
+    <string name="channel_ongoing">Daily Prayer Times (Lock Screen)</string>
+    <string name="channel_ongoing_desc">Displays the next prayer and daily summary discreetly on the lock screen.</string>
+    <string name="notif_ongoing_title">Next prayer: %1$s at %2$s</string>
+
+    <string name="notif_adhan_title">It is time for %1$s</string>
+    <string name="notif_adhan_body">It is %1$s. Tap to open the app.</string>
+    <string name="notif_pre_title">%1$s is coming up</string>
+    <string name="notif_pre_body">The %1$s Adhan will be at %2$s.</string>
+    <string name="notif_missed_title">Missed alarm: %1$s</string>
+    <string name="notif_missed_body">The %1$s alarm could not sound on time (device off or alarm blocked).</string>
+    <string name="notif_missed_late">%1$d min late · scheduled %2$s</string>
+    <string name="notif_tz_title">Time zone changed</string>
+    <string name="notif_tz_body">The device is now in %2$s but the times were computed for %1$s. Open AdhanSalat to recompute them.</string>
+    <string name="notif_stop">Stop</string>
+    <string name="notif_diagnostics">Diagnostics</string>
+    <string name="notif_fallback_body">Open the app for today’s times.</string>
+    <string name="notif_sound_unavailable">Custom sound unavailable: notification only.</string>
+
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <string name="diag_exact_title">Exact alarms</string>
+    <string name="diag_exact_ok">Allowed: the system can wake the device at the exact time.</string>
+    <string name="diag_exact_missing">Not allowed: no alarm can be scheduled. Allow “Alarms &amp; reminders”.</string>
+    <string name="diag_grant">Allow</string>
+    <string name="diag_notif_title">Notifications</string>
+    <string name="diag_notif_ok">Granted.</string>
+    <string name="diag_notif_missing">Denied: the Adhan can still sound but nothing is displayed.</string>
+    <string name="diag_battery_title">Battery optimisation</string>
+    <string name="diag_battery_ok">The app is exempt: alarms are not delayed.</string>
+    <string name="diag_battery_missing">Not exempt: some manufacturers delay alarms. Open settings and choose “Unrestricted”.</string>
+    <string name="diag_open_settings">Open settings</string>
+    <string name="diag_armed_title">Scheduled alarms</string>
+    <string name="diag_armed_none">No stored alarm. Open the web app and choose a city.</string>
+    <string name="diag_armed_count">%1$d upcoming alarm(s) out of %2$d stored.</string>
+    <string name="diag_last_title">Last result</string>
+    <string name="diag_last_none">No alarm has fired since installation.</string>
+    <string name="diag_sync_title">Last native sync</string>
+    <string name="diag_sync_none">No native sync recorded yet.</string>
+    <string name="diag_sync_body">%1$s · %2$d armed, %3$d skipped out of %4$d stored.</string>
+    <string name="diag_sync_deferred">%1$s · NOT ARMED (%2$s): %3$d stored event(s).</string>
+    <string name="diag_sounds_title">Imported sounds (private storage)</string>
+    <string name="diag_sounds_none">No imported sound is readable by the native player.</string>
+    <string name="diag_sounds_item">%1$s · %2$d KB</string>
+    <string name="diag_test_title">Real check</string>
+    <string name="diag_test_button">Test an alarm in 20 seconds</string>
+    <string name="diag_test_hint">The alarm is scheduled by AlarmManager, not by a JavaScript timer. Lock the screen: it must sound.</string>
+    <string name="diag_test_scheduled">Test alarm scheduled. Lock the screen now.</string>
+    <string name="diag_test_blocked">Not possible: allow exact alarms first.</string>
+    <string name="diag_stop_audio">Stop the sound</string>
+    <string name="diag_stop_audio_idle">No sound playing.</string>
+    <string name="diag_refresh">Refresh</string>
+    <string name="diag_close">Close</string>
+    <string name="diag_window_note">Alarms are stored for 31 days and re-armed after every reboot. Open the app from time to time to extend the window.</string>
+    <string name="diag_sound_note">Sounds imported in the web app are copied into the app’s private storage, so a native alarm can play them. If the copy failed, the alarm shows a notification without audio and the web diagnostics say so. The three bundled chimes also work natively.</string>
+    <string name="widget_spiritual_note">صاحب التطبيق يسألكم صالح الدعاء · صدقة جارية</string>
+    <string name="widget_next_prayer_label">Next prayer</string>
+</resources>

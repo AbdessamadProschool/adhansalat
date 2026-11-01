@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Deep Green background #064332 -->
+    <item android:drawable="@color/azan_green" />
+
+    <!-- Centered AdhanSalat Logo -->
+    <item
+        android:width="130dp"
+        android:height="130dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_launcher" />
+</layer-list>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">أذان صلاة</string>
+    <string name="native_diagnostics_title">Diagnostic natif</string>
+    <string name="native_diagnostics_subtitle">Alarmes réellement programmées dans le système</string>
+
+    <!-- Notification channels -->
+    <string name="channel_adhan">Adhan</string>
+    <string name="channel_adhan_desc">Son de l’Adhan joué par le service de premier plan.</string>
+    <string name="channel_pre">Rappel avant la prière</string>
+    <string name="channel_pre_desc">Notification discrète quelques minutes avant la prière.</string>
+    <string name="channel_status">État des alarmes</string>
+    <string name="channel_status_desc">Alarmes manquées et informations de reprogrammation.</string>
+    <string name="channel_ongoing">Horaires du jour (Écran verrouillé)</string>
+    <string name="channel_ongoing_desc">Affiche la prochaine prière et le résumé du jour de manière permanente.</string>
+    <string name="notif_ongoing_title">Prochaine prière : %1$s à %2$s</string>
+
+    <!-- Notifications -->
+    <string name="notif_adhan_title">C’est l’heure de %1$s</string>
+    <string name="notif_adhan_body">Il est %1$s. Touchez pour ouvrir l’application.</string>
+    <string name="notif_pre_title">%1$s approche</string>
+    <string name="notif_pre_body">L’Adhan de %1$s sera à %2$s.</string>
+    <string name="notif_missed_title">Alarme manquée : %1$s</string>
+    <string name="notif_missed_body">L’alarme de %1$s n’a pas pu sonner à l’heure prévue (appareil éteint ou alarme bloquée).</string>
+    <string name="notif_missed_late">%1$d min de retard · heure prévue %2$s</string>
+    <string name="notif_tz_title">Fuseau horaire modifié</string>
+    <string name="notif_tz_body">L’appareil est maintenant en %2$s mais les horaires ont été calculés pour %1$s. Ouvrez AdhanSalat pour les recalculer.</string>
+    <string name="notif_stop">Arrêter</string>
+    <string name="notif_diagnostics">Diagnostic</string>
+    <string name="notif_fallback_body">Ouvrez l’application pour les horaires du jour.</string>
+    <string name="notif_sound_unavailable">Son personnalisé indisponible : notification seule.</string>
+
+    <!-- Prayer names -->
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <!-- Native diagnostics screen -->
+    <string name="diag_exact_title">Alarmes exactes</string>
+    <string name="diag_exact_ok">Autorisées : le système peut réveiller l’appareil à l’heure exacte.</string>
+    <string name="diag_exact_missing">Non autorisées : aucune alarme ne peut être programmée. Autorisez « Alarmes et rappels ».</string>
+    <string name="diag_grant">Autoriser</string>
+    <string name="diag_notif_title">Notifications</string>
+    <string name="diag_notif_ok">Accordées.</string>
+    <string name="diag_notif_missing">Refusées : l’Adhan peut sonner mais rien ne s’affiche.</string>
+    <string name="diag_battery_title">Optimisation de la batterie</string>
+    <string name="diag_battery_ok">L’application est exemptée : les alarmes ne sont pas retardées.</string>
+    <string name="diag_battery_missing">Non exemptée : certains fabricants retardent les alarmes. Ouvrez les réglages et choisissez « Sans restriction ».</string>
+    <string name="diag_open_settings">Ouvrir les réglages</string>
+    <string name="diag_armed_title">Alarmes programmées</string>
+    <string name="diag_armed_none">Aucune alarme stockée. Ouvrez l’application web et choisissez une ville.</string>
+    <string name="diag_armed_count">%1$d alarme(s) à venir sur %2$d stockée(s).</string>
+    <string name="diag_last_title">Dernier résultat</string>
+    <string name="diag_last_none">Aucune alarme déclenchée depuis l’installation.</string>
+    <string name="diag_sync_title">Dernière synchronisation native</string>
+    <string name="diag_sync_none">Aucune synchronisation native enregistrée.</string>
+    <string name="diag_sync_body">%1$s · %2$d armée(s), %3$d ignorée(s) sur %4$d stockée(s).</string>
+    <string name="diag_sync_deferred">%1$s · NON ARMÉ (%2$s) : %3$d événement(s) stocké(s).</string>
+    <string name="diag_sounds_title">Sons importés (stockage privé)</string>
+    <string name="diag_sounds_none">Aucun son importé n’est accessible au lecteur natif.</string>
+    <string name="diag_sounds_item">%1$s · %2$d Ko</string>
+    <string name="diag_test_title">Vérification réelle</string>
+    <string name="diag_test_button">Tester une alarme dans 20 secondes</string>
+    <string name="diag_test_hint">L’alarme est programmée par AlarmManager, pas par un minuteur JavaScript. Verrouillez l’écran : elle doit sonner.</string>
+    <string name="diag_test_scheduled">Alarme de test programmée. Verrouillez l’écran maintenant.</string>
+    <string name="diag_test_blocked">Impossible : autorisez d’abord les alarmes exactes.</string>
+    <string name="diag_stop_audio">Arrêter le son</string>
+    <string name="diag_stop_audio_idle">Aucun son en cours.</string>
+    <string name="diag_refresh">Actualiser</string>
+    <string name="diag_close">Fermer</string>
+    <string name="diag_window_note">Les alarmes sont stockées pour 31 jours et reprogrammées après chaque redémarrage. Ouvrez l’application de temps en temps pour prolonger la fenêtre.</string>
+    <string name="diag_sound_note">Les sons importés depuis l’application web sont copiés dans le stockage privé de l’application et peuvent donc être lus par une alarme native. Si la copie a échoué, l’alarme affiche une notification sans son et le diagnostic web l’indique. Les trois carillons fournis fonctionnent aussi nativement.</string>
+    <string name="widget_spiritual_note">صاحب التطبيق يسألكم صالح الدعاء · صدقة جارية</string>
+    <string name="widget_next_prayer_label">Prochaine prière</string>
+</resources>

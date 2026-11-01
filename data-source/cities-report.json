@@ -1,0 +1,617 @@
+{
+  "generatedAt": "2026-10-28T20:37:58.327Z",
+  "inputs": {
+    "morocco": "data-source\\MA.txt",
+    "moroccoLines": 153872,
+    "world": "data-source\\cities15000.txt",
+    "admin1": "data-source\\admin1CodesASCII.txt",
+    "admin2": "data-source\\admin2Codes.txt"
+  },
+  "acceptedFeatureCodes": [
+    "PPL",
+    "PPLA",
+    "PPLA2",
+    "PPLA3",
+    "PPLC",
+    "PPLF",
+    "PPLL",
+    "PPLS"
+  ],
+  "rejected": {
+    "featureClass": 106926,
+    "featureCode": 904,
+    "coordinateEnvelope": 2,
+    "timeZone": 1,
+    "invalidId": 0,
+    "invalidCoordinate": 0,
+    "duplicateId": 0
+  },
+  "seenFeatureCodes": {
+    "DPR": 29,
+    "HLL": 14566,
+    "DUNE": 21,
+    "WAD": 13770,
+    "HLLS": 1719,
+    "RDGE": 2362,
+    "SBKH": 16,
+    "PPL": 45323,
+    "SHOR": 1,
+    "SCRP": 87,
+    "LKI": 136,
+    "MN": 30,
+    "WLL": 4916,
+    "SLP": 512,
+    "ISL": 22,
+    "MT": 8720,
+    "STM": 1171,
+    "AREA": 3562,
+    "LCTY": 13798,
+    "SPNG": 2909,
+    "PPLA3": 195,
+    "RUIN": 364,
+    "PASS": 1975,
+    "TRB": 1306,
+    "CULT": 3056,
+    "PLAT": 109,
+    "MTS": 790,
+    "LKNI": 1,
+    "HSE": 182,
+    "LGN": 2,
+    "ADMD": 64,
+    "FT": 181,
+    "FRM": 2340,
+    "TMB": 1787,
+    "SHRN": 10049,
+    "CTRR": 86,
+    "WTLDI": 478,
+    "FORD": 95,
+    "MSQE": 1032,
+    "SPUR": 361,
+    "CLF": 74,
+    "BLDG": 1648,
+    "PLN": 58,
+    "PPLX": 836,
+    "CAPE": 30,
+    "COVE": 14,
+    "DCK": 2,
+    "AIRP": 31,
+    "PT": 100,
+    "PK": 48,
+    "SAND": 4,
+    "LK": 41,
+    "PNDI": 215,
+    "GRGE": 61,
+    "FAN": 19,
+    "RSTN": 70,
+    "CMTY": 3776,
+    "OAS": 35,
+    "MKT": 557,
+    "STMX": 6,
+    "ADM2": 75,
+    "AIRF": 25,
+    "VAL": 53,
+    "RVN": 173,
+    "RSVT": 12,
+    "PPLA2": 14,
+    "STMC": 40,
+    "RSTP": 1,
+    "STNF": 26,
+    "BDG": 14,
+    "PPLQ": 67,
+    "GAP": 22,
+    "BAY": 7,
+    "BCH": 110,
+    "FRST": 251,
+    "PIER": 3,
+    "STMI": 139,
+    "CRQ": 7,
+    "PPLA": 9,
+    "REG": 6,
+    "POOL": 14,
+    "RSV": 35,
+    "DAM": 45,
+    "PPLF": 322,
+    "PROM": 42,
+    "TRIG": 211,
+    "PPLL": 176,
+    "RHSE": 6,
+    "MNQ": 3,
+    "ERG": 11,
+    "CNL": 110,
+    "RF": 3,
+    "AIRB": 3,
+    "MRSH": 78,
+    "OILF": 1,
+    "PRN": 4,
+    "QUAY": 2,
+    "RDST": 3,
+    "INSM": 10,
+    "ADM1H": 17,
+    "PPLC": 1,
+    "BRKW": 4,
+    "SCH": 383,
+    "CMP": 11,
+    "FNDY": 1,
+    "STMM": 3,
+    "RKS": 5,
+    "PCLI": 1,
+    "CAVE": 43,
+    "FY": 1,
+    "ISLS": 2,
+    "ANS": 5,
+    "RTE": 1,
+    "TNL": 2,
+    "WTRC": 2,
+    "GASF": 3,
+    "BUTE": 12,
+    "PRT": 22,
+    "ARCH": 1,
+    "MESA": 29,
+    "RK": 14,
+    "CRKT": 1,
+    "FRMQ": 2,
+    "TRL": 32,
+    "SCHM": 1,
+    "HTL": 1661,
+    "OBS": 2,
+    "GATE": 16,
+    "PAL": 9,
+    "COMC": 8,
+    "MNFE": 1,
+    "PRK": 12,
+    "ANCH": 2,
+    "HMDA": 1,
+    "HDLD": 1,
+    "STNM": 1,
+    "AIRQ": 4,
+    "": 1,
+    "UNIV": 9,
+    "REST": 5,
+    "PO": 2,
+    "ADM3": 1794,
+    "TRR": 1,
+    "TOWR": 22,
+    "CSTL": 2,
+    "SQR": 28,
+    "GDN": 3,
+    "MUS": 8,
+    "HSTS": 4,
+    "ADM3H": 1,
+    "RESF": 61,
+    "PPLS": 2,
+    "SPNT": 3,
+    "DEVH": 148,
+    "MLWND": 3,
+    "STDM": 5,
+    "CTRCM": 4,
+    "SCHC": 32,
+    "HSP": 17,
+    "EST": 45,
+    "MNQR": 42,
+    "OCH": 24,
+    "BSND": 1,
+    "STBL": 22,
+    "RECG": 7,
+    "WADX": 2,
+    "INDS": 6,
+    "PS": 9,
+    "LTHSE": 14,
+    "RFU": 1,
+    "LDGU": 1,
+    "BUSTP": 1,
+    "PRKHQ": 1,
+    "ADMF": 14,
+    "MFGQ": 2,
+    "VETF": 3,
+    "DIP": 10,
+    "RD": 65,
+    "MFG": 37,
+    "TREE": 25,
+    "CST": 2,
+    "MFGN": 2,
+    "MFGPH": 5,
+    "VIN": 18,
+    "MND": 3,
+    "UPLD": 1,
+    "AGRF": 25,
+    "PND": 18,
+    "MLSG": 1,
+    "SCHT": 5,
+    "SDL": 22,
+    "FCL": 16,
+    "NSY": 4,
+    "CTRA": 1,
+    "HUT": 1,
+    "OILT": 4,
+    "FLD": 1,
+    "TAL": 9,
+    "BLDO": 15,
+    "SCHA": 5,
+    "SWMP": 1,
+    "TRANT": 1,
+    "RET": 2,
+    "RSRT": 12,
+    "PSH": 2,
+    "RECR": 1,
+    "PP": 3,
+    "ITTR": 3,
+    "RSVI": 4,
+    "ML": 1,
+    "AMTH": 1,
+    "RDCR": 1,
+    "SWT": 2,
+    "RESN": 3,
+    "JTY": 1,
+    "HSPC": 6,
+    "WTLD": 3,
+    "MAR": 2,
+    "ST": 161,
+    "WALL": 1,
+    "GOSP": 2,
+    "DPOF": 1,
+    "BRKS": 4,
+    "MFGC": 1,
+    "CTRM": 1,
+    "CTRB": 1,
+    "MALL": 4,
+    "WTRW": 2,
+    "RDGB": 5,
+    "LKOI": 1,
+    "DTCHI": 2,
+    "PMPW": 7,
+    "LKO": 1,
+    "SCRB": 2,
+    "DTCH": 1,
+    "RESH": 1,
+    "STNR": 1,
+    "KRST": 1,
+    "TMPL": 1,
+    "PEN": 1,
+    "INTF": 3,
+    "CNYN": 1,
+    "FLLS": 1,
+    "BUSTN": 1,
+    "HSEC": 1,
+    "ADM1": 12,
+    "PPLR": 1,
+    "CNLA": 1,
+    "SBED": 2,
+    "LEV": 4,
+    "STMH": 1,
+    "CNFL": 1,
+    "CH": 2,
+    "STMSB": 1,
+    "MNMT": 4,
+    "GROVE": 8,
+    "OBPT": 1,
+    "WALLA": 1,
+    "ADM4": 708,
+    "CMPQ": 1,
+    "AIRH": 1,
+    "ATHF": 4,
+    "MTRO": 15,
+    "BNKR": 1,
+    "CMPLA": 1,
+    "SHPF": 1
+  },
+  "accepted": {
+    "total": 46039,
+    "withArabic": 113,
+    "withVariants": 11921,
+    "variantTokens": 26615,
+    "maxVariantsStored": 12,
+    "populationAboveZero": 401,
+    "populationZero": 45638,
+    "biggest": {
+      "name": "Casablanca",
+      "pop": 3665954
+    },
+    "byFeatureCode": {
+      "PPL": 45320,
+      "PPLA3": 195,
+      "PPLA2": 14,
+      "PPLA": 9,
+      "PPLF": 322,
+      "PPLL": 176,
+      "PPLC": 1,
+      "PPLS": 2
+    }
+  },
+  "checks": {
+    "duplicateIds": 0,
+    "duplicateNameCoordinates": 0,
+    "sameNameWithin1km": 81,
+    "sameNameWithin1kmSample": [
+      {
+        "name": "Oulad Tayeb",
+        "distanceKm": 0.59,
+        "ids": [
+          11091508,
+          11091568
+        ]
+      },
+      {
+        "name": "Moulay Driss Zerhoun",
+        "distanceKm": 0.33,
+        "ids": [
+          2541805,
+          10984355
+        ]
+      },
+      {
+        "name": "Adouz",
+        "distanceKm": 0.35,
+        "ids": [
+          2546860,
+          2561876
+        ]
+      },
+      {
+        "name": "Aguerd",
+        "distanceKm": 0.87,
+        "ids": [
+          2557460,
+          2568884
+        ]
+      },
+      {
+        "name": "Aït Abdoun",
+        "distanceKm": 0.98,
+        "ids": [
+          2560691,
+          2560692
+        ]
+      },
+      {
+        "name": "Aït Lahsene ou Brahim",
+        "distanceKm": 0.01,
+        "ids": [
+          2559647,
+          2559646
+        ]
+      },
+      {
+        "name": "Aït Tiouine",
+        "distanceKm": 0.37,
+        "ids": [
+          2558919,
+          2568327
+        ]
+      },
+      {
+        "name": "Amadine",
+        "distanceKm": 0.81,
+        "ids": [
+          2558357,
+          2558358
+        ]
+      },
+      {
+        "name": "Amchila",
+        "distanceKm": 0.69,
+        "ids": [
+          2558222,
+          2558223
+        ]
+      },
+      {
+        "name": "Amsoul",
+        "distanceKm": 0.97,
+        "ids": [
+          2558093,
+          2588547
+        ]
+      },
+      {
+        "name": "Assafid",
+        "distanceKm": 0.98,
+        "ids": [
+          2556989,
+          2568896
+        ]
+      },
+      {
+        "name": "Ayt Mohamed",
+        "distanceKm": 0.67,
+        "ids": [
+          2552118,
+          11436212
+        ]
+      },
+      {
+        "name": "Azar",
+        "distanceKm": 0.64,
+        "ids": [
+          2556648,
+          2556707
+        ]
+      },
+      {
+        "name": "Bou Tara",
+        "distanceKm": 0.82,
+        "ids": [
+          2553952,
+          2568892
+        ]
+      },
+      {
+        "name": "Charikat Zayane",
+        "distanceKm": 0.95,
+        "ids": [
+          10976323,
+          10976449
+        ]
+      },
+      {
+        "name": "Coopérative Ait Bou Hofra",
+        "distanceKm": 0.68,
+        "ids": [
+          8542592,
+          8542634
+        ]
+      },
+      {
+        "name": "Coopérative Bni Oukil",
+        "distanceKm": 0.91,
+        "ids": [
+          11024630,
+          11024631
+        ]
+      },
+      {
+        "name": "Coopérative Ennaiji",
+        "distanceKm": 0.64,
+        "ids": [
+          10976374,
+          10976460
+        ]
+      },
+      {
+        "name": "Coopérative Ettijaniya",
+        "distanceKm": 0.95,
+        "ids": [
+          11024449,
+          11024468
+        ]
+      },
+      {
+        "name": "Coopérative Lharcha",
+        "distanceKm": 0.89,
+        "ids": [
+          10957524,
+          10957527
+        ]
+      }
+    ],
+    "infiniteCoordinates": 0,
+    "zeroZeroCoordinates": 0,
+    "incompatibleZones": 0,
+    "outsideEnvelope": 0,
+    "unknownAdminCodes": 2,
+    "rejectedEntries": [
+      {
+        "id": 2526369,
+        "name": "Zaouia bou Saïd",
+        "code": "PPL",
+        "lat": 3.7,
+        "lon": -8.85,
+        "tz": "Africa/Casablanca",
+        "reason": "coordonnées hors de l’enveloppe Maroc + Sahara occidental"
+      },
+      {
+        "id": 2556625,
+        "name": "Aziader",
+        "code": "PPL",
+        "lat": 36.61,
+        "lon": -5.38,
+        "tz": "Africa/Casablanca",
+        "reason": "coordonnées hors de l’enveloppe Maroc + Sahara occidental"
+      },
+      {
+        "id": 7413962,
+        "name": "Falaklak",
+        "code": "PPL",
+        "lat": 21.78915,
+        "lon": -13.6244,
+        "tz": "Africa/Nouakchott",
+        "reason": "fuseau horaire incompatible"
+      }
+    ],
+    "duplicateNameCoordinatesSample": []
+  },
+  "regions": {
+    "10": {
+      "name": "Guelmim-Oued Noun",
+      "count": 1150,
+      "file": "ma-10.json"
+    },
+    "11": {
+      "name": "Laayoune-Sakia El Hamra",
+      "count": 5,
+      "file": "ma-11.json"
+    },
+    "12": {
+      "name": "Dakhla-Oued Ed-Dahab",
+      "count": 6,
+      "file": "ma-12.json"
+    },
+    "00": {
+      "name": "Rattachement régional incertain",
+      "count": 2,
+      "file": "ma-00.json"
+    },
+    "01": {
+      "name": "Tanger-Tetouan-Al Hoceima",
+      "count": 4581,
+      "file": "ma-01.json"
+    },
+    "02": {
+      "name": "Oriental",
+      "count": 2923,
+      "file": "ma-02.json"
+    },
+    "03": {
+      "name": "Fes-Meknes",
+      "count": 5163,
+      "file": "ma-03.json"
+    },
+    "04": {
+      "name": "Rabat-Salé-Kénitra",
+      "count": 3004,
+      "file": "ma-04.json"
+    },
+    "05": {
+      "name": "Beni Mellal-Khenifra",
+      "count": 3194,
+      "file": "ma-05.json"
+    },
+    "06": {
+      "name": "Casablanca-Settat",
+      "count": 4556,
+      "file": "ma-06.json"
+    },
+    "07": {
+      "name": "Marrakesh-Safi",
+      "count": 12376,
+      "file": "ma-07.json"
+    },
+    "08": {
+      "name": "Drâa-Tafilalet",
+      "count": 2594,
+      "file": "ma-08.json"
+    },
+    "09": {
+      "name": "Souss-Massa",
+      "count": 6485,
+      "file": "ma-09.json"
+    }
+  },
+  "outputs": {
+    "core": {
+      "file": "src/core/data/cities-core.json",
+      "bytes": 318391,
+      "cities": 1996
+    },
+    "index": {
+      "file": "public/data/cities/index.json",
+      "bytes": 2273552,
+      "entries": 46039
+    },
+    "regions": {
+      "files": 13,
+      "bytes": 9675232
+    },
+    "full": {
+      "file": "src/core/data/cities.json"
+    },
+    "totalMoroccoBytes": 11948784
+  },
+  "counts": {
+    "morocco": 46039,
+    "world": 1696,
+    "total": 47735,
+    "countries": 244,
+    "bundled": 1996,
+    "notBundled": 45739
+  }
+}

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# The app is a single-page shell; hash routes are not separate documents.
+# No user data is ever exposed through a URL, so nothing needs to be hidden.

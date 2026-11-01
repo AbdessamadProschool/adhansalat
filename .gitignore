@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+
+# Android build & caches
+.gradle/
+build/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/.cxx/
+
+# IDE & Editor
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary scratch
+scratch/

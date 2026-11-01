@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <!--
+    Original zellige tile by the Azan Global project. No stock image is used.
+
+    Geometry: one eight-point star (khatim) at the centre, four quarter stars on
+    the corners and four half diamonds on the edge midpoints. The tile is
+    seamless: the clipped corners and edges complete each other on repeat.
+
+    Shapes are painted black so the file can be used as a CSS mask: the visible
+    colour then comes from a design token and follows the light/dark theme
+    without a second asset.
+  -->
+  <g stroke="#000" stroke-width="1.5" stroke-linejoin="round">
+    <!-- centre star: two squares, one rotated 45 degrees -->
+    <path d="M22 60 L60 22 L98 60 L60 98 Z" />
+    <path d="M33.13 33.13 L86.87 33.13 L86.87 86.87 L33.13 86.87 Z" />
+    <!-- corner stars (clipped by the tile, completed on repeat) -->
+    <path d="M-38 0 L0 -38 L38 0 L0 38 Z" />
+    <path d="M-26.87 -26.87 L26.87 -26.87 L26.87 26.87 L-26.87 26.87 Z" />
+    <path d="M82 0 L120 -38 L158 0 L120 38 Z" />
+    <path d="M93.13 -26.87 L146.87 -26.87 L146.87 26.87 L93.13 26.87 Z" />
+    <path d="M-38 120 L0 82 L38 120 L0 158 Z" />
+    <path d="M-26.87 93.13 L26.87 93.13 L26.87 146.87 L-26.87 146.87 Z" />
+    <path d="M82 120 L120 82 L158 120 L120 158 Z" />
+    <path d="M93.13 93.13 L146.87 93.13 L146.87 146.87 L93.13 146.87 Z" />
+  </g>
+  <g fill="#000">
+    <!-- inner diamonds: the small cut tiles of a zellige panel -->
+    <path d="M60 48 L72 60 L60 72 L48 60 Z" />
+    <path d="M0 -12 L12 0 L0 12 L-12 0 Z" />
+    <path d="M120 -12 L132 0 L120 12 L108 0 Z" />
+    <path d="M0 108 L12 120 L0 132 L-12 120 Z" />
+    <path d="M120 108 L132 120 L120 132 L108 120 Z" />
+    <!-- diamonds bridging the tiles on each edge -->
+    <path d="M60 -9 L69 0 L60 9 L51 0 Z" />
+    <path d="M60 111 L69 120 L60 129 L51 120 Z" />
+    <path d="M-9 60 L0 69 L9 60 L0 51 Z" />
+    <path d="M111 60 L120 69 L129 60 L120 51 Z" />
+  </g>
+</svg>

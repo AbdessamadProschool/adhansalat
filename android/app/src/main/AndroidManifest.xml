@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Exact alarms. Two declarations, on purpose:
+
+      * SCHEDULE_EXACT_ALARM (API 31-32) is granted at install and can be revoked;
+        the app checks canScheduleExactAlarms() before every sync and offers a
+        button that opens the "Alarms & reminders" screen.
+      * USE_EXACT_ALARM (API 33+) is granted automatically and cannot be revoked.
+        Google Play only accepts it when the app's core purpose is alarms or a
+        calendar. A prayer app exists to sound the Adhan at a fixed time, so this
+        is the intended category; the release checklist in docs/ANDROID.md asks
+        for that declaration to be justified in the Play Console.
+
+      Never add a JS timer as a "fallback" for a denied exact alarm: the web layer
+      reports the limitation instead of pretending the alarm exists.
+    -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!--
+      No INTERNET permission: the app is fully local. The WebView loads only from
+      the APK's own assets through WebViewAssetLoader, and nothing is sent to a
+      server. Adding INTERNET here would silently contradict the privacy screen.
+    -->
+
+    <application
+        android:name=".AzanApplication"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Azan">
+
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.Azan.Starting"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode|density|locale|layoutDirection"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".NativeDiagnosticsActivity"
+            android:exported="false"
+            android:label="@string/native_diagnostics_title" />
+
+        <!-- Fires when AlarmManager reaches a prayer. Not exported: only the OS. -->
+        <receiver
+            android:name=".AdhanReceiver"
+            android:exported="false" />
+
+        <!--
+          Re-arms the stored schedule after a reboot, a clock/time-zone change or a
+          grant of the exact-alarm permission. Android cancels every alarm on
+          reboot, so this receiver is the reason the schedule survives one.
+        -->
+        <receiver
+            android:name=".SystemEventReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".AdhanService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- Receiver for Auto-Silence (Masjid Mode) -->
+        <receiver
+            android:name=".AutoSilenceReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.azan.global.ACTION_SILENCE" />
+                <action android:name="app.azan.global.ACTION_RESTORE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- App Widget Provider -->
+        <receiver
+            android:name=".AzanWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/azan_widget_info" />
+        </receiver>
+    </application>
+</manifest>
