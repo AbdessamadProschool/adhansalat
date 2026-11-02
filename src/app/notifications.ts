@@ -130,6 +130,12 @@ export interface NativeBridge {
   notificationPermission?(): string;
   requestNotificationPermission?(): void;
   openNativeDiagnostics?(): void;
+  isAdhanPlaying?(): boolean;
+  stopAdhan?(): void;
+  getNativeCompassHeading?(): number;
+  getGeomagneticDeclination?(latitude: number, longitude: number, altitude: number): number;
+  setMosqueMode?(durationMinutes: number): void;
+  getMosqueMode?(): number;
   /**
    * Copies the audio file just picked through the Android file chooser into the
    * app's private storage so the native player can use it. Returns a JSON

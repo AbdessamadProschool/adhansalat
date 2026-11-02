@@ -48,16 +48,14 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
   if (!anchorMonth) anchorMonth = todayKey.slice(0, 7);
   if (!selectedDay) selectedDay = todayKey;
 
-  const anchor = anchorMonth;
-  const { year, month } = parseDateKey(`${anchor}-01`);
-  const firstKey = `${anchor}-01`;
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const monthTimes = computeWindow(firstKey, daysInMonth, loc, settings.calculation);
-  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const method = getMethod(settings.calculation.methodId);
 
-  // Keep the selection inside the displayed month.
-  if (!selectedDay.startsWith(anchor)) selectedDay = firstKey;
+  let currentAnchor = anchorMonth;
+  let currentTitle = '';
+  let currentMonthTimes: ReturnType<typeof computeWindow> = [];
+  let currentDaysInMonth = 0;
+  let currentYear = 0;
+  let currentMonthNum = 0;
 
   const header = el(
     'div',
@@ -66,16 +64,125 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
     el('p', { class: 'small muted', text: t('calendar.subtitle') }),
   );
 
-  // ---------------------------------------------------------------- month card
   const monthCard = el('div', { class: 'card' });
-  const title = fmtMonth(zonedTimeToInstant(year, month, 1, 12, 0, loc.timeZone), loc.timeZone, ctx.intl);
-  const backIcon = icon('chevronLeft', 18);
-  backIcon.classList.add('icon-directional');
-  const forwardIcon = icon('chevron', 18);
-  forwardIcon.classList.add('icon-directional');
+  const detail = el('div', { class: 'card tab-glider' });
 
-  monthCard.append(
-    el(
+  function paintDetail(targetDay: string, currentTimes: ReturnType<typeof computeWindow>): void {
+    const dayTimes = currentTimes.find((d) => d.date === targetDay);
+    const sel = parseDateKey(targetDay);
+    const selInstant = zonedTimeToInstant(sel.year, sel.month, sel.day, 12, 0, loc!.timeZone);
+    const hijri = settings.showHijri ? hijriDate(selInstant, loc!.timeZone, ctx.intl, settings.hijriAdjustment ?? 0) : null;
+
+    const nodes: HTMLElement[] = [];
+    nodes.push(
+      el(
+        'div',
+        { class: 'card-head' },
+        el(
+          'div',
+          {},
+          el('h2', { text: fmtDateFull(selInstant, loc!.timeZone, ctx.intl) }),
+          hijri ? el('div', { class: 'tiny muted', text: `${t('home.hijri')} · ${hijri.formatted}` }) : null,
+        ),
+        el('span', { class: 'chip', text: method.key }),
+      ),
+    );
+
+    if (dayTimes) {
+      const table = el('table', { class: 'times' });
+      const thead = el('thead');
+      thead.appendChild(
+        el(
+          'tr',
+          {},
+          el('th', { text: t('calendar.prayer') }),
+          el('th', { text: t('calendar.time') }),
+        ),
+      );
+      const tbody = el('tbody');
+      for (const field of CAL_FIELDS) {
+        const at = dayTimes[field];
+        const isSunrise = field === 'sunrise';
+        tbody.appendChild(
+          el(
+            'tr',
+            { class: isSunrise ? 'is-sunrise' : undefined },
+            el(
+              'td',
+              {},
+              icon(field === 'sunrise' ? 'sunrise' : field, 14),
+              ` ${t(`prayer.${field}` as MessageKey)}`,
+              isSunrise ? el('span', { class: 'tiny muted', text: ` · ${t('prayer.sunriseNote')}` }) : null,
+            ),
+            el('td', { class: 'num', text: at ? fmtTime(at, loc!.timeZone, ctx.intl) : '—' }),
+          ),
+        );
+      }
+      table.append(thead, tbody);
+      nodes.push(el('div', { class: 'table-wrap' }, table));
+
+      const imsakTime = calculateImsak(dayTimes.fajr, settings.imsakOffsetMinutes ?? 10);
+      const rec = getFastingRecommendation(hijri, selInstant);
+      const fastingStrip = el(
+        'div',
+        { class: 'status-strip', attrs: { style: 'margin-block-start: var(--space-3);' } },
+        icon('moon', 16),
+        el(
+          'span',
+          { class: 'grow' },
+          el('strong', { text: `${t('fasting.imsak')} : ` }),
+          imsakTime ? fmtTime(imsakTime, loc!.timeZone, ctx.intl) : '—',
+          el('strong', { text: ` · ${t('fasting.iftar')} : ` }),
+          dayTimes.maghrib ? fmtTime(dayTimes.maghrib, loc!.timeZone, ctx.intl) : '—',
+        ),
+        rec.isRecommended
+          ? el('span', { class: 'chip row align-center gap-xs' }, icon('sparkle', 11), el('span', { text: t(rec.reasonKey as MessageKey) }))
+          : null,
+      );
+      nodes.push(fastingStrip);
+
+      if (dayTimes.highLatitudeFallback === 'applied') {
+        nodes.push(el('p', { class: 'tiny muted', text: t('home.highLatApplied') }));
+      } else if (dayTimes.highLatitudeFallback === 'unresolvable') {
+        nodes.push(alertBox('warn', t('home.unresolvable'), t('methods.highLatDesc')));
+      }
+    } else {
+      nodes.push(
+        emptyState({
+          art: 'calendar',
+          title: t('calendar.noTimes'),
+          body: t('calendar.offline'),
+        }),
+      );
+    }
+
+    detail.classList.remove('tab-glider');
+    void detail.offsetWidth;
+    detail.replaceChildren(...nodes);
+    detail.classList.add('tab-glider');
+  }
+
+  function paintMonth(anchor: string): void {
+    currentAnchor = anchor;
+    const { year, month } = parseDateKey(`${anchor}-01`);
+    currentYear = year;
+    currentMonthNum = month;
+    currentDaysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const firstKey = `${anchor}-01`;
+    currentMonthTimes = computeWindow(firstKey, currentDaysInMonth, loc!, settings.calculation);
+    const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+    currentTitle = fmtMonth(zonedTimeToInstant(year, month, 1, 12, 0, loc!.timeZone), loc!.timeZone, ctx.intl);
+
+    if (!selectedDay || !selectedDay.startsWith(anchor)) {
+      selectedDay = firstKey;
+    }
+
+    const backIcon = icon('chevronLeft', 18);
+    backIcon.classList.add('icon-directional');
+    const forwardIcon = icon('chevron', 18);
+    forwardIcon.classList.add('icon-directional');
+
+    const calHead = el(
       'div',
       { class: 'cal-head' },
       el(
@@ -87,14 +194,13 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
             click: () => {
               const prev = new Date(Date.UTC(year, month - 2, 1));
               anchorMonth = `${prev.getUTCFullYear()}-${String(prev.getUTCMonth() + 1).padStart(2, '0')}`;
-              selectedDay = `${anchorMonth}-01`;
-              ctx.refresh();
+              paintMonth(anchorMonth);
             },
           },
         },
         backIcon,
       ),
-      el('div', { class: 'cal-title center', text: title }),
+      el('div', { class: 'cal-title center', text: currentTitle }),
       el(
         'button',
         {
@@ -104,8 +210,7 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
             click: () => {
               const next = new Date(Date.UTC(year, month, 1));
               anchorMonth = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, '0')}`;
-              selectedDay = `${anchorMonth}-01`;
-              ctx.refresh();
+              paintMonth(anchorMonth);
             },
           },
         },
@@ -120,144 +225,74 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
             click: () => {
               anchorMonth = todayKey.slice(0, 7);
               selectedDay = todayKey;
-              ctx.refresh();
+              paintMonth(anchorMonth);
             },
           },
         },
-        t('common.today'),
+        icon('calendarToday', 13),
+        ` ${t('common.today')}`,
       ),
-    ),
-  );
+    );
 
-  const grid = el('div', {
-    class: 'cal-grid',
-    attrs: { role: 'group', 'aria-label': `${title} — ${t('calendar.selectDay')}` },
-  });
-  for (const label of t('calendar.weekdays').split(',')) {
-    grid.appendChild(el('span', { class: 'cal-dow', text: label }));
-  }
-  for (let i = 0; i < firstWeekday; i++) {
-    grid.appendChild(el('span', { class: 'cal-cell empty', attrs: { 'aria-hidden': 'true' } }));
-  }
-  monthTimes.forEach((day, index) => {
-    const key = addDaysToKey(firstKey, index);
-    const dayNumber = index + 1;
-    const isToday = key === todayKey;
-    const isSelected = key === selectedDay;
-    const parsed = parseDateKey(key);
-    const noon = zonedTimeToInstant(parsed.year, parsed.month, parsed.day, 12, 0, loc.timeZone);
-    const fullLabel = fmtDateFull(noon, loc.timeZone, ctx.intl);
-    const cell = el(
-      'button',
-      {
-        class: `cal-cell${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}`,
-        attrs: {
-          type: 'button',
-          'aria-pressed': String(isSelected),
-          ...(isToday ? { 'aria-current': 'date' } : {}),
-          'aria-label': `${fullLabel}${day.fajr ? ` · ${t('prayer.fajr')} ${fmtTime(day.fajr, loc.timeZone, ctx.intl)}` : ''}`,
-        },
-        on: {
-          click: () => {
-            selectedDay = key;
-            ctx.refresh();
+    const grid = el('div', {
+      class: 'cal-grid',
+      attrs: { role: 'group', 'aria-label': `${currentTitle} — ${t('calendar.selectDay')}` },
+    });
+    for (const label of t('calendar.weekdays').split(',')) {
+      grid.appendChild(el('span', { class: 'cal-dow', text: label }));
+    }
+    for (let i = 0; i < firstWeekday; i++) {
+      grid.appendChild(el('span', { class: 'cal-cell empty', attrs: { 'aria-hidden': 'true' } }));
+    }
+
+    const cellElements: Map<string, HTMLButtonElement> = new Map();
+
+    currentMonthTimes.forEach((day, index) => {
+      const key = addDaysToKey(firstKey, index);
+      const dayNumber = index + 1;
+      const isToday = key === todayKey;
+      const isSelected = key === selectedDay;
+      const parsed = parseDateKey(key);
+      const noon = zonedTimeToInstant(parsed.year, parsed.month, parsed.day, 12, 0, loc!.timeZone);
+      const fullLabel = fmtDateFull(noon, loc!.timeZone, ctx.intl);
+      const cell = el(
+        'button',
+        {
+          class: `cal-cell${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}`,
+          attrs: {
+            type: 'button',
+            'aria-pressed': String(isSelected),
+            ...(isToday ? { 'aria-current': 'date' } : {}),
+            'aria-label': `${fullLabel}${day.fajr ? ` · ${t('prayer.fajr')} ${fmtTime(day.fajr, loc!.timeZone, ctx.intl)}` : ''}`,
+          },
+          on: {
+            click: () => {
+              if (selectedDay === key) return;
+              const prevEl = cellElements.get(selectedDay || '');
+              if (prevEl) {
+                prevEl.classList.remove('selected');
+                prevEl.setAttribute('aria-pressed', 'false');
+              }
+              cell.classList.add('selected');
+              cell.setAttribute('aria-pressed', 'true');
+              selectedDay = key;
+              paintDetail(selectedDay, currentMonthTimes);
+            },
           },
         },
-      },
-      el('span', { text: String(dayNumber) }),
-      el('span', { class: 'fajr-mini', text: day.fajr ? fmtTime(day.fajr, loc.timeZone, ctx.intl) : '—' }),
-    );
-    grid.appendChild(cell);
-  });
-  monthCard.append(grid);
+        el('span', { text: String(dayNumber) }),
+        el('span', { class: 'fajr-mini', text: day.fajr ? fmtTime(day.fajr, loc!.timeZone, ctx.intl) : '—' }),
+      ) as HTMLButtonElement;
 
-  // ---------------------------------------------------------------- selected day
-  const detail = el('div', { class: 'card' });
-  const dayTimes = monthTimes.find((d) => d.date === selectedDay);
-  const sel = selectedDay ? parseDateKey(selectedDay) : null;
-  const selInstant = sel ? zonedTimeToInstant(sel.year, sel.month, sel.day, 12, 0, loc.timeZone) : now;
-  const hijri = settings.showHijri ? hijriDate(selInstant, loc.timeZone, ctx.intl, settings.hijriAdjustment ?? 0) : null;
+      cellElements.set(key, cell);
+      grid.appendChild(cell);
+    });
 
-  detail.append(
-    el(
-      'div',
-      { class: 'card-head' },
-      el(
-        'div',
-        {},
-        el('h2', { text: fmtDateFull(selInstant, loc.timeZone, ctx.intl) }),
-        hijri ? el('div', { class: 'tiny muted', text: `${t('home.hijri')} · ${hijri.formatted}` }) : null,
-      ),
-      el('span', { class: 'chip', text: method.key }),
-    ),
-  );
-
-  if (dayTimes) {
-    const table = el('table', { class: 'times' });
-    const thead = el('thead');
-    thead.appendChild(
-      el(
-        'tr',
-        {},
-        el('th', { text: t('calendar.prayer') }),
-        el('th', { text: t('calendar.time') }),
-      ),
-    );
-    const tbody = el('tbody');
-    for (const field of CAL_FIELDS) {
-      const at = dayTimes[field];
-      const isSunrise = field === 'sunrise';
-      tbody.appendChild(
-        el(
-          'tr',
-          { class: isSunrise ? 'is-sunrise' : undefined },
-          el(
-            'td',
-            {},
-            t(`prayer.${field}` as MessageKey),
-            isSunrise ? el('span', { class: 'tiny muted', text: ` · ${t('prayer.sunriseNote')}` }) : null,
-          ),
-          el('td', { class: 'num', text: at ? fmtTime(at, loc.timeZone, ctx.intl) : '—' }),
-        ),
-      );
-    }
-    table.append(thead, tbody);
-    detail.append(el('div', { class: 'table-wrap' }, table));
-
-    const imsakTime = calculateImsak(dayTimes.fajr, settings.imsakOffsetMinutes ?? 10);
-    const rec = getFastingRecommendation(hijri, selInstant);
-    const fastingStrip = el(
-      'div',
-      { class: 'status-strip', attrs: { style: 'margin-block-start: var(--space-3);' } },
-      icon('moon', 16),
-      el(
-        'span',
-        { class: 'grow' },
-        el('strong', { text: `${t('fasting.imsak')} : ` }),
-        imsakTime ? fmtTime(imsakTime, loc.timeZone, ctx.intl) : '—',
-        el('strong', { text: ` · ${t('fasting.iftar')} : ` }),
-        dayTimes.maghrib ? fmtTime(dayTimes.maghrib, loc.timeZone, ctx.intl) : '—',
-      ),
-      rec.isRecommended
-        ? el('span', { class: 'chip' }, t(rec.reasonKey as MessageKey))
-        : null,
-    );
-    detail.append(fastingStrip);
-
-    if (dayTimes.highLatitudeFallback === 'applied') {
-      detail.append(el('p', { class: 'tiny muted', text: t('home.highLatApplied') }));
-    } else if (dayTimes.highLatitudeFallback === 'unresolvable') {
-      detail.append(alertBox('warn', t('home.unresolvable'), t('methods.highLatDesc')));
-    }
-  } else {
-    detail.append(
-      emptyState({
-        art: 'calendar',
-        title: t('calendar.noTimes'),
-        body: t('calendar.offline'),
-      }),
-    );
+    monthCard.replaceChildren(calHead, grid);
+    paintDetail(selectedDay!, currentMonthTimes);
   }
+
+  paintMonth(anchorMonth);
 
   // ---------------------------------------------------------------- context
   const placeLabel = loc.cityName
@@ -292,11 +327,11 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
 
       // Description
       container.append(
-        el('p', { class: 'small muted', text: `${title} — ${placeLabel}` }),
+        el('p', { class: 'small muted', text: `${currentTitle} — ${placeLabel}` }),
         el('p', { class: 'tiny muted', text: method.name[ctx.locale] }),
       );
 
-      // Buttons
+      // Print / PDF Button
       const printBtn = el(
         'button',
         {
@@ -304,7 +339,43 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
           attrs: { type: 'button' },
           on: {
             click: () => {
-              window.print();
+              close();
+              // Remove any old print document
+              document.querySelectorAll('.print-document').forEach((e) => e.remove());
+              const printDoc = buildPrintDocument(
+                ctx,
+                currentMonthTimes,
+                loc,
+                settings,
+                currentAnchor,
+                currentTitle,
+                placeLabel,
+                method,
+                currentDaysInMonth,
+                currentYear,
+                currentMonthNum,
+              );
+              document.body.appendChild(printDoc);
+
+              // Allow DOM render before launching print dialog
+              requestAnimationFrame(() => {
+                setTimeout(() => {
+                  window.print();
+                  window.addEventListener(
+                    'afterprint',
+                    () => {
+                      printDoc.remove();
+                    },
+                    { once: true },
+                  );
+                  // Safety cleanup
+                  setTimeout(() => {
+                    if (document.body.contains(printDoc)) {
+                      printDoc.remove();
+                    }
+                  }, 30000);
+                }, 150);
+              });
             },
           },
         },
@@ -312,15 +383,27 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
         t('calendar.print'),
       );
 
-      const csvBtn = el(
+      // Excel / CSV Button
+      const excelBtn = el(
         'button',
         {
           class: 'btn ghost block',
           attrs: { type: 'button' },
           on: {
             click: () => {
+              const bom = '\uFEFF';
+              const sep = 'sep=;\r\n';
+              const isRtl = ctx.locale === 'ar';
+
+              const metaTitle = `"${isRtl ? 'أذان صلاة · AdanSalat — إمساكية ومواقيت الصلاة الشهرية' : 'AdanSalat — Calendrier mensuel des prières'}"`;
+              const metaPlace = `"${isRtl ? 'المدينة' : 'Lieu'}: ${placeLabel.replace(/"/g, '""')}"`;
+              const metaMonth = `"${isRtl ? 'الشهر' : 'Mois'}: ${currentTitle.replace(/"/g, '""')}"`;
+              const metaMethod = `"${isRtl ? 'طريقة الحساب' : 'Méthode'}: ${method.name[ctx.locale].replace(/"/g, '""')}"`;
+              const metaDua = `"${isRtl ? '« صَدَقَةٌ جَارِيَةٌ • نَسْأَلُكُمُ الدُّعَاءَ »' : '« Aumône continue · Priez pour nous »'}"`;
+
               const headers = [
                 t('calendar.day'),
+                t('calendar.gregorian'),
                 t('calendar.hijri'),
                 t('calendar.imsak'),
                 t('prayer.fajr'),
@@ -329,37 +412,49 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
                 t('prayer.asr'),
                 t('prayer.maghrib'),
                 t('prayer.isha'),
-              ];
-              const rows: string[] = [headers.join(',')];
+              ].map((h) => `"${h.replace(/"/g, '""')}"`);
 
-              for (let d = 1; d <= daysInMonth; d++) {
-                const dayKey = `${anchor}-${String(d).padStart(2, '0')}`;
-                const dt = monthTimes[d - 1];
-                const dInstant = zonedTimeToInstant(year, month, d, 12, 0, loc.timeZone);
+              const lines: string[] = [
+                sep.trim(),
+                `${metaTitle};;;;;;;;;`,
+                `${metaPlace};${metaMonth};${metaMethod};;;;;;;`,
+                `${metaDua};;;;;;;;;`,
+                '',
+                headers.join(';'),
+              ];
+
+              const weekdays = t('calendar.weekdays').split(',');
+
+              for (let d = 1; d <= currentDaysInMonth; d++) {
+                const dayKey = `${currentAnchor}-${String(d).padStart(2, '0')}`;
+                const dt = currentMonthTimes[d - 1];
+                const dInstant = zonedTimeToInstant(currentYear, currentMonthNum, d, 12, 0, loc.timeZone);
                 const hijri = hijriDate(dInstant, loc.timeZone, ctx.intl, settings.hijriAdjustment ?? 0);
                 const imsak = dt?.fajr ? calculateImsak(dt.fajr, settings.imsakOffsetMinutes ?? 10) : null;
-
-                const hijriLabel = hijri ? `"${hijri.formatted}"` : '—';
+                const weekdayIdx = new Date(Date.UTC(currentYear, currentMonthNum - 1, d)).getUTCDay();
+                const weekdayName = weekdays[weekdayIdx] ?? '';
+                const hijriLabel = hijri ? `${hijri.day} ${hijri.monthName} ${hijri.year}` : '—';
 
                 const row = [
-                  dayKey,
-                  hijriLabel,
-                  imsak ? fmtTime(imsak, loc.timeZone, ctx.intl) : '—',
-                  dt?.fajr ? fmtTime(dt.fajr, loc.timeZone, ctx.intl) : '—',
-                  dt?.sunrise ? fmtTime(dt.sunrise, loc.timeZone, ctx.intl) : '—',
-                  dt?.dhuhr ? fmtTime(dt.dhuhr, loc.timeZone, ctx.intl) : '—',
-                  dt?.asr ? fmtTime(dt.asr, loc.timeZone, ctx.intl) : '—',
-                  dt?.maghrib ? fmtTime(dt.maghrib, loc.timeZone, ctx.intl) : '—',
-                  dt?.isha ? fmtTime(dt.isha, loc.timeZone, ctx.intl) : '—',
+                  `"${weekdayName}"`,
+                  `"${dayKey}"`,
+                  `"${hijriLabel.replace(/"/g, '""')}"`,
+                  `"${imsak ? fmtTime(imsak, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.fajr ? fmtTime(dt.fajr, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.sunrise ? fmtTime(dt.sunrise, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.dhuhr ? fmtTime(dt.dhuhr, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.asr ? fmtTime(dt.asr, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.maghrib ? fmtTime(dt.maghrib, loc.timeZone, ctx.intl) : '—'}"`,
+                  `"${dt?.isha ? fmtTime(dt.isha, loc.timeZone, ctx.intl) : '—'}"`,
                 ];
-                rows.push(row.join(','));
+                lines.push(row.join(';'));
               }
 
-              const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+              const blob = new Blob([bom + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `horaires_${anchor}_${loc.cityName || 'azan'}.csv`;
+              a.download = `horaires_${currentAnchor}_${(loc.cityName || 'azan').replace(/\s+/g, '_')}.csv`;
               a.click();
               URL.revokeObjectURL(url);
               ctx.toast(t('common.done'));
@@ -367,7 +462,7 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
           },
         },
         icon('download', 18),
-        t('calendar.csv'),
+        t('calendar.excel'),
       );
 
       const copyBtn = el(
@@ -377,11 +472,11 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
           attrs: { type: 'button' },
           on: {
             click: async () => {
-              let text = `${title} — ${placeLabel}\n${method.name[ctx.locale]}\n\n`;
+              let text = `${currentTitle} — ${placeLabel}\n${method.name[ctx.locale]}\n\n`;
               text += `Date\tImsak\tFajr\tChourouk\tDhuhr\tAsr\tMaghrib\tIsha\n`;
-              for (let d = 1; d <= daysInMonth; d++) {
-                const dayKey = `${anchor}-${String(d).padStart(2, '0')}`;
-                const dt = monthTimes[d - 1];
+              for (let d = 1; d <= currentDaysInMonth; d++) {
+                const dayKey = `${currentAnchor}-${String(d).padStart(2, '0')}`;
+                const dt = currentMonthTimes[d - 1];
                 const imsak = dt?.fajr ? calculateImsak(dt.fajr, settings.imsakOffsetMinutes ?? 10) : null;
                 text += `${dayKey}\t${imsak ? fmtTime(imsak, loc.timeZone, ctx.intl) : '—'}\t${dt?.fajr ? fmtTime(dt.fajr, loc.timeZone, ctx.intl) : '—'}\t${dt?.sunrise ? fmtTime(dt.sunrise, loc.timeZone, ctx.intl) : '—'}\t${dt?.dhuhr ? fmtTime(dt.dhuhr, loc.timeZone, ctx.intl) : '—'}\t${dt?.asr ? fmtTime(dt.asr, loc.timeZone, ctx.intl) : '—'}\t${dt?.maghrib ? fmtTime(dt.maghrib, loc.timeZone, ctx.intl) : '—'}\t${dt?.isha ? fmtTime(dt.isha, loc.timeZone, ctx.intl) : '—'}\n`;
               }
@@ -397,7 +492,7 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
       );
 
       container.append(
-        el('div', { class: 'stack xs' }, printBtn, csvBtn, copyBtn),
+        el('div', { class: 'stack xs' }, printBtn, excelBtn, copyBtn),
         el(
           'button',
           { class: 'btn ghost block', attrs: { type: 'button' }, on: { click: close } },
@@ -429,4 +524,150 @@ export function calendarScreen(ctx: AppContext): HTMLElement {
     el('p', { class: 'tiny muted center', text: t('calendar.offline') }),
   );
   return root;
+}
+
+function buildPrintDocument(
+  ctx: AppContext,
+  monthTimes: ReturnType<typeof computeWindow>,
+  loc: NonNullable<ReturnType<typeof ctx.store.get>['location']>,
+  settings: ReturnType<typeof ctx.store.get>,
+  anchor: string,
+  title: string,
+  placeLabel: string,
+  method: ReturnType<typeof getMethod>,
+  daysInMonth: number,
+  year: number,
+  month: number,
+): HTMLElement {
+  const t = ctx.t;
+  const isRtl = ctx.locale === 'ar';
+  const doc = el('div', { class: 'print-document', attrs: { dir: isRtl ? 'rtl' : 'ltr' } });
+
+  // Spiritual watermark in the background
+  const watermark = el('div', { class: 'print-watermark', attrs: { 'aria-hidden': 'true' } });
+  watermark.appendChild(el('span', { text: t('calendar.watermark') }));
+  doc.appendChild(watermark);
+
+  // Header with app emblem
+  const header = el('header', { class: 'print-header' });
+  const brand = el('div', { class: 'print-brand' });
+
+  const logo = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  logo.setAttribute('class', 'print-logo');
+  logo.setAttribute('viewBox', '0 0 240 160');
+  logo.setAttribute('fill', 'none');
+  logo.setAttribute('aria-hidden', 'true');
+  logo.innerHTML =
+    '<path d="M116 34a42 42 0 1 0 44 58 34 34 0 0 1-44-58z" stroke="#047857" stroke-width="7" stroke-linejoin="round"/>' +
+    '<path d="m174 42 2.4 5.6 5.9.5-4.4 4 1.3 5.9-5.2-3.1-5.2 3.1 1.3-5.9-4.4-4 5.9-.5z" fill="#b45309"/>' +
+    '<path d="M30 132h180M62 132v-16M96 132v-8M130 132v-22M164 132v-12M198 132v-20" stroke="#047857" stroke-width="4.5" stroke-linecap="round" opacity=".6"/>';
+
+  const brandText = el(
+    'div',
+    {},
+    el('h1', { class: 'print-title', text: 'أَذَان صَلَاة · AdanSalat' }),
+    el('p', { class: 'print-subtitle', text: t('calendar.printSubtitle') }),
+    el('div', {
+      class: 'print-dedication',
+      text: '« صَدَقَةٌ جَارِيَةٌ لِوَجْهِ اللَّهِ تَعَالَى • لَا تَنْسَوْنَا مِنْ صَالِحِ دُعَائِكُمْ »',
+    }),
+  );
+  brand.append(logo, brandText);
+
+  // Mid-month Hijri representation
+  const midInstant = zonedTimeToInstant(year, month, 15, 12, 0, loc.timeZone);
+  const midHijri = settings.showHijri
+    ? hijriDate(midInstant, loc.timeZone, ctx.intl, settings.hijriAdjustment ?? 0)
+    : null;
+  const hijriMonthLabel = midHijri ? `${midHijri.monthName} ${midHijri.year} هـ` : '';
+
+  const metaGrid = el('div', { class: 'print-meta-grid' });
+  const cityItem = el('div', { class: 'print-meta-item' });
+  cityItem.append(el('strong', { text: `${isRtl ? 'الموقع' : 'Lieu'}: ` }), el('span', { text: placeLabel }));
+
+  const monthItem = el('div', { class: 'print-meta-item' });
+  monthItem.append(
+    el('strong', { text: `${isRtl ? 'الشهر' : 'Mois'}: ` }),
+    el('span', { text: hijriMonthLabel ? `${title} · ${hijriMonthLabel}` : title }),
+  );
+
+  const methodItem = el('div', { class: 'print-meta-item print-meta-wide' });
+  methodItem.append(
+    el('strong', { text: `${isRtl ? 'طريقة الحساب' : 'Méthode'}: ` }),
+    el('span', { text: `${method.name[ctx.locale]} (${loc.timeZone})` }),
+  );
+
+  metaGrid.append(cityItem, monthItem, methodItem);
+  header.append(brand, metaGrid);
+  doc.appendChild(header);
+
+  // Table
+  const table = el('table', { class: 'print-table' });
+  const thead = el('thead');
+  const trHead = el('tr');
+  const cols = [
+    t('calendar.day'),
+    t('calendar.gregorian'),
+    t('calendar.hijri'),
+    t('calendar.imsak'),
+    t('prayer.fajr'),
+    t('prayer.sunrise'),
+    t('prayer.dhuhr'),
+    t('prayer.asr'),
+    t('prayer.maghrib'),
+    t('prayer.isha'),
+  ];
+  for (const col of cols) {
+    trHead.appendChild(el('th', { text: col }));
+  }
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  const tbody = el('tbody');
+  const weekdays = t('calendar.weekdays').split(',');
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayKey = `${anchor}-${String(d).padStart(2, '0')}`;
+    const dt = monthTimes[d - 1];
+    const dInstant = zonedTimeToInstant(year, month, d, 12, 0, loc.timeZone);
+    const h = settings.showHijri
+      ? hijriDate(dInstant, loc.timeZone, ctx.intl, settings.hijriAdjustment ?? 0)
+      : null;
+    const imsak = dt?.fajr ? calculateImsak(dt.fajr, settings.imsakOffsetMinutes ?? 10) : null;
+    const weekdayIdx = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
+    const weekdayName = weekdays[weekdayIdx] ?? '';
+    const isFriday = weekdayIdx === 5;
+
+    const tr = el('tr', { class: isFriday ? 'print-row-friday' : undefined });
+    tr.append(
+      el('td', { class: 'print-cell-day', text: `${weekdayName} ${d}` }),
+      el('td', { text: dayKey }),
+      el('td', { text: h ? `${h.day} ${h.monthName}` : '—' }),
+      el('td', { class: 'print-cell-imsak', text: imsak ? fmtTime(imsak, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { class: 'print-cell-prayer', text: dt?.fajr ? fmtTime(dt.fajr, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { text: dt?.sunrise ? fmtTime(dt.sunrise, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { class: 'print-cell-prayer', text: dt?.dhuhr ? fmtTime(dt.dhuhr, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { class: 'print-cell-prayer', text: dt?.asr ? fmtTime(dt.asr, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { class: 'print-cell-maghrib', text: dt?.maghrib ? fmtTime(dt.maghrib, loc.timeZone, ctx.intl) : '—' }),
+      el('td', { class: 'print-cell-prayer', text: dt?.isha ? fmtTime(dt.isha, loc.timeZone, ctx.intl) : '—' }),
+    );
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  doc.appendChild(table);
+
+  // Footer
+  const footer = el('footer', { class: 'print-footer' });
+  const fLeft = el('div', { class: 'print-footer-left' });
+  fLeft.append(
+    el('span', { text: 'تطبيق أذان صلاة · AdanSalat (100% مجاني بدون إعلانات)' }),
+    el('span', { class: 'print-footer-dot', text: '•' }),
+    el('span', { text: 'صدقة جارية · نسألكم الدعاء' }),
+  );
+  const fRight = el('div', { class: 'print-footer-right' });
+  fRight.append(el('span', { text: 'adhansalat.vercel.app' }));
+  footer.append(fLeft, fRight);
+  doc.appendChild(footer);
+
+  return doc;
 }

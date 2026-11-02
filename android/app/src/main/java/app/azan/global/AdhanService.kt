@@ -247,7 +247,14 @@ class AdhanService : Service() {
         }
 
         fun stop(context: Context) {
-            context.stopService(Intent(context, AdhanService::class.java))
+            val intent = Intent(context, AdhanService::class.java).apply {
+                action = ACTION_STOP
+            }
+            try {
+                context.startService(intent)
+            } catch (_: Exception) {
+                context.stopService(Intent(context, AdhanService::class.java))
+            }
         }
     }
 }

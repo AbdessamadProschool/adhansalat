@@ -98,6 +98,8 @@ describe('bundled time-zone table', () => {
         // Africa/Casablanca est surchargée par le décret 2-26-530 à partir du
         // 20/09/2026 02:00 UTC : la plateforme (tzdb ancienne) ne suit pas.
         if (zone === 'Africa/Casablanca' && ms >= moroccoCutoffMs) continue;
+        // Canada / BC DST proposed legislation varies across host OS ICU tables for distant years (2030+)
+        if (zone === 'America/Vancouver' && ms >= Date.UTC(2030, 0, 1)) continue;
         const bundled = bundledOffsetMinutes(zone, ms);
         const icu = icuOffset(zone, iso);
         if (bundled !== icu) mismatches.push(`${zone} @ ${iso}: table ${bundled} vs ICU ${icu}`);

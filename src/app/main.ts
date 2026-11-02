@@ -11,7 +11,7 @@ import { SettingsStore } from './store.js';
 import { AlarmEngine } from './alarm-engine.js';
 import { adhanPlayer } from './audio.js';
 import { closeSheet, el, icon, openSheet } from './ui.js';
-import { registerServiceWorker } from './notifications.js';
+import { nativeBridge, registerServiceWorker } from './notifications.js';
 import type { AppContext, Route } from './context.js';
 import { homeScreen } from './screens/home.js';
 import { calendarScreen } from './screens/calendar.js';
@@ -30,6 +30,7 @@ const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 const cleanups: Array<() => void> = [];
 let renderQueued = false;
+let isInitialRender = true;
 
 const SCREENS: Record<Exclude<Route, 'onboarding'>, (ctx: AppContext) => HTMLElement> = {
   home: homeScreen,
@@ -146,23 +147,43 @@ function render(): void {
 
   const app = document.getElementById('app');
   if (!app) return;
-  app.replaceChildren();
 
-  const main = el('main', { class: 'app-main', attrs: { id: 'main' } });
+  const performRender = () => {
+    app.replaceChildren();
 
-  try {
-    main.appendChild(route === 'onboarding' ? onboardingScreen(ctx) : SCREENS[route](ctx));
-  } catch (err) {
-    main.appendChild(
-      alertBox('bad', t('error.engine'), err instanceof Error ? `${err.message}` : String(err)),
-    );
-  }
+    const main = el('main', { class: 'app-main page-enter', attrs: { id: 'main' } });
 
-  if (route !== 'onboarding') {
-    app.append(topbar(ctx), main, bottomNav(ctx));
+    try {
+      main.appendChild(route === 'onboarding' ? onboardingScreen(ctx) : SCREENS[route](ctx));
+    } catch (err) {
+      main.appendChild(
+        alertBox('bad', t('error.engine'), err instanceof Error ? `${err.message}` : String(err)),
+      );
+    }
+
+    if (route !== 'onboarding') {
+      const banner = activeAdhanBanner(ctx);
+      if (banner) {
+        app.append(topbar(ctx), banner, main, bottomNav(ctx));
+      } else {
+        app.append(topbar(ctx), main, bottomNav(ctx));
+      }
+    } else {
+      app.append(main);
+    }
+  };
+
+  const hasViewTransition =
+    !isInitialRender &&
+    typeof (document as unknown as { startViewTransition?: unknown }).startViewTransition === 'function' &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (hasViewTransition) {
+    (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(performRender);
   } else {
-    app.append(main);
+    performRender();
   }
+  isInitialRender = false;
 
   // Keep the document title in sync with the language without re-downloading it.
   const titleKey =
@@ -177,8 +198,73 @@ function render(): void {
       : `${t('app.name')} — ${t(titleKey as 'nav.home')}`;
 }
 
+function activeAdhanBanner(ctx: AppContext): HTMLElement | null {
+  const isNativePlaying = Boolean(nativeBridge()?.isAdhanPlaying?.());
+  const isWebPlaying = Boolean(ctx.player.currentId);
+  if (!isNativePlaying && !isWebPlaying) return null;
+
+  const t = ctx.t;
+  return el(
+    'div',
+    { class: 'active-adhan-bar', attrs: { role: 'alert', 'aria-live': 'assertive' } },
+    el(
+      'div',
+      { class: 'active-adhan-info' },
+      el('span', { class: 'active-adhan-pulse' }),
+      el('span', { class: 'active-adhan-text', text: t('adhan.active') }),
+    ),
+    el(
+      'button',
+      {
+        class: 'active-adhan-stop-btn',
+        attrs: { type: 'button' },
+        on: {
+          click: () => {
+            nativeBridge()?.stopAdhan?.();
+            ctx.player.stop();
+            ctx.toast(t('adhan.stopped'));
+            scheduleRender();
+          },
+        },
+      },
+      icon('volume-x'),
+      el('span', { text: t('adhan.stopNow') }),
+    ),
+  );
+}
+
 function topbar(ctx: AppContext): HTMLElement {
   const t = ctx.t;
+  const currentTheme = ctx.store.get().theme;
+  const isDark =
+    currentTheme === 'dark' ||
+    (currentTheme === 'auto' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  const themeBtn = el(
+    'button',
+    {
+      class: 'icon-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': isDark ? t('settings.theme.light') : t('settings.theme.dark'),
+        'data-tip': isDark ? t('settings.theme.light') : t('settings.theme.dark'),
+      },
+      on: {
+        click: () => {
+          const next = isDark ? 'light' : 'dark';
+          ctx.store.update((d) => {
+            d.theme = next;
+          });
+          document.documentElement.dataset.theme = next;
+          ctx.refresh();
+        },
+      },
+    },
+    icon(isDark ? 'sun' : 'moon', 20),
+  );
+
   return el(
     'header',
     { class: 'topbar' },
@@ -190,19 +276,7 @@ function topbar(ctx: AppContext): HTMLElement {
       el('span', { text: t('app.tagline') }),
     ),
     el('span', { class: 'spacer' }),
-    el(
-      'button',
-      {
-        class: 'icon-btn',
-        attrs: {
-          type: 'button',
-          'aria-label': t('diag.title'),
-          'data-tip': t('diag.title'),
-        },
-        on: { click: () => ctx.navigate('diagnostics') },
-      },
-      icon('shield', 20),
-    ),
+    themeBtn,
   );
 }
 
@@ -214,7 +288,6 @@ function bottomNav(ctx: AppContext): HTMLElement {
     { route: 'qibla', glyph: 'kaaba', label: t('nav.qibla') },
     { route: 'tasbih', glyph: 'beads', label: t('nav.tasbih') },
     { route: 'adhan', glyph: 'speaker', label: t('nav.adhan') },
-    { route: 'methods', glyph: 'sliders', label: t('nav.methods') },
     { route: 'settings', glyph: 'gear', label: t('nav.settings') },
   ];
 
@@ -299,6 +372,19 @@ document.addEventListener('visibilitychange', () => {
   engine.replan('visibility');
   scheduleRender();
 });
+
+window.addEventListener('focus', () => {
+  scheduleRender();
+});
+
+let lastPlayingState = false;
+setInterval(() => {
+  const currentPlaying = Boolean(nativeBridge()?.isAdhanPlaying?.() || adhanPlayer.currentId);
+  if (currentPlaying !== lastPlayingState) {
+    lastPlayingState = currentPlaying;
+    scheduleRender();
+  }
+}, 1000);
 
 engine.start();
 render();

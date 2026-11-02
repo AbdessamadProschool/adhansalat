@@ -34,11 +34,11 @@ import {
 } from '../ui.js';
 
 const PRAYER_ICON: Record<PrayerKey, string> = {
-  fajr: 'moon',
-  dhuhr: 'sun',
-  asr: 'sun',
-  maghrib: 'sun',
-  isha: 'moon',
+  fajr: 'fajr',
+  dhuhr: 'dhuhr',
+  asr: 'asr',
+  maghrib: 'maghrib',
+  isha: 'isha',
 };
 
 // ------------------------------------------------------------------ countdown ring
@@ -151,25 +151,37 @@ export function openPrayerDetail(ctx: AppContext, prayer: PrayerKey): void {
       );
 
       nodes.push(
-        switchRow(t('adhan.enabled'), null, pref.enabled, (next) => {
-          ctx.store.update((d) => {
-            d.prayers[prayer].enabled = next;
-          });
-          ctx.engine.replan('preference');
-          ctx.refresh();
-          render();
-        }),
+        switchRow(
+          t('adhan.enabled'),
+          null,
+          pref.enabled,
+          (next) => {
+            ctx.store.update((d) => {
+              d.prayers[prayer].enabled = next;
+            });
+            ctx.engine.replan('preference');
+            ctx.refresh();
+            render();
+          },
+          'bell',
+        ),
       );
 
       nodes.push(
-        switchRow(t('adhan.audio'), t('adhan.volume'), pref.audioEnabled, (next) => {
-          ctx.store.update((d) => {
-            d.prayers[prayer].audioEnabled = next;
-          });
-          ctx.engine.replan('preference');
-          ctx.refresh();
-          render();
-        }),
+        switchRow(
+          t('adhan.audio'),
+          t('adhan.volume'),
+          pref.audioEnabled,
+          (next) => {
+            ctx.store.update((d) => {
+              d.prayers[prayer].audioEnabled = next;
+            });
+            ctx.engine.replan('preference');
+            ctx.refresh();
+            render();
+          },
+          'speaker',
+        ),
       );
 
       const select = el('select', { attrs: { 'aria-label': t('prayerDetail.sound'), disabled: !pref.audioEnabled } });
@@ -215,13 +227,19 @@ export function openPrayerDetail(ctx: AppContext, prayer: PrayerKey): void {
       );
 
       nodes.push(
-        switchRow(t('adhan.vibration'), null, pref.vibration, (next) => {
-          ctx.store.update((d) => {
-            d.prayers[prayer].vibration = next;
-          });
-          ctx.refresh();
-          render();
-        }),
+        switchRow(
+          t('adhan.vibration'),
+          null,
+          pref.vibration,
+          (next) => {
+            ctx.store.update((d) => {
+              d.prayers[prayer].vibration = next;
+            });
+            ctx.refresh();
+            render();
+          },
+          'vibrate',
+        ),
       );
 
       const testBtn = el(
@@ -377,7 +395,12 @@ export function homeScreen(ctx: AppContext): HTMLElement {
         el(
           'div',
           { class: 'hero-prayer' },
-          el('div', { class: 'next-label', text: t('home.next') }),
+          el(
+            'div',
+            { class: 'hero-prayer-head' },
+            el('span', { class: 'hero-prayer-icon' }, icon(PRAYER_ICON[next.prayer], 28)),
+            el('div', { class: 'next-label', text: t('home.next') }),
+          ),
           el('div', { class: 'name', attrs: { id: 'home-next' }, text: nextName }),
           ctx.locale === 'ar' ? null : el('div', { class: 'ar', text: PRAYER_ARABIC[next.prayer] }),
           el(
@@ -431,28 +454,40 @@ export function homeScreen(ctx: AppContext): HTMLElement {
     el(
       'div',
       { class: 'hero-foot' },
-      el('span', { class: 'pill on-hero' }, method.name[ctx.locale]),
-      el('span', { class: 'pill on-hero' }, `${t('home.offset')} ${offsetLabelOf(loc.timeZone, now)}`),
       el(
-        'span',
-        { class: 'pill on-hero' },
-        `${t('methods.asr')} · ${settings.calculation.asrSchool === 'hanafi' ? t('methods.asr.hanafiShort') : t('methods.asr.standardShort')}`,
+        'button',
+        {
+          class: 'pill on-hero',
+          attrs: { type: 'button', style: 'cursor:pointer;border:none;' },
+          on: { click: () => ctx.navigate('methods') },
+        },
+        icon('sliders', 13),
+        ` ${method.name[ctx.locale]}`,
       ),
       current
         ? el(
             'span',
             { class: 'pill on-hero' },
             icon('clock', 13),
-            `${t('common.now')} · ${t(`prayer.${current.prayer}` as MessageKey)}`,
+            ` ${t('common.now')} · ${t(`prayer.${current.prayer}` as MessageKey)}`,
+          )
+        : null,
+      now.getDay() === 5
+        ? el(
+            'span',
+            { class: 'pill on-hero' },
+            icon('lantern', 13),
+            ctx.locale === 'ar' ? ' جمعة مباركة' : ' Vendredi béni',
           )
         : null,
       times.highLatitudeFallback === 'applied'
-        ? el('span', { class: 'pill on-hero' }, t('home.highLatApplied'))
+        ? el('span', { class: 'pill on-hero' }, icon('info', 13), ` ${t('home.highLatApplied')}`)
         : null,
     ),
   );
 
   root.append(hero);
+  root.append(buildSpiritualCard(ctx, now, hijri));
 
   // ---------------------------------------------------------------- fasting & iftar
   root.append(
@@ -484,7 +519,12 @@ export function homeScreen(ctx: AppContext): HTMLElement {
       el(
         'div',
         { class: 'stack sm', attrs: { style: 'min-width:0' } },
-        el('span', { class: 'eyebrow', text: t('home.reminders') }),
+        el(
+          'span',
+          { class: 'eyebrow row align-center gap-xs' },
+          icon('bell', 13),
+          el('span', { text: t('home.reminders') }),
+        ),
         nextAlarm
           ? el(
               'strong',
@@ -598,7 +638,7 @@ export function homeScreen(ctx: AppContext): HTMLElement {
             },
             on: { click: () => openPrayerDetail(ctx, prayer) },
           },
-          el('span', { class: 'prayer-icon' }, icon(PRAYER_ICON[prayer], 18)),
+          el('span', { class: 'prayer-icon' }, icon(PRAYER_ICON[prayer], 22)),
           el(
             'span',
             { class: 'prayer-name' },
@@ -625,7 +665,7 @@ export function homeScreen(ctx: AppContext): HTMLElement {
             class: 'prayer-row is-sunrise',
             attrs: { 'aria-label': t('prayer.sunriseNote') },
           },
-          el('span', { class: 'prayer-icon' }, icon('sun', 18)),
+          el('span', { class: 'prayer-icon' }, icon('sunrise', 22)),
           el(
             'span',
             { class: 'prayer-name' },
@@ -668,52 +708,15 @@ export function homeScreen(ctx: AppContext): HTMLElement {
     ),
   );
 
-  // ---------------------------------------------------------------- offline & honesty notes
-  const online = typeof navigator === 'undefined' ? true : navigator.onLine;
+  // ---------------------------------------------------------------- spiritual footer
   root.append(
     el(
       'div',
-      { class: 'status-strip' },
-      icon(online ? 'wifi' : 'wifiOff', 18),
-      el(
-        'span',
-        { class: 'grow', attrs: { style: 'min-width:160px' } },
-        el('strong', { text: online ? t('home.offlineReady') : t('home.offlineNow') }),
-        online ? el('span', { class: 'tiny muted', text: ` ${t('calendar.offline')}` }) : null,
-      ),
-      el(
-        'button',
-        { class: 'btn sm ghost', attrs: { type: 'button' }, on: { click: () => ctx.navigate('diagnostics') } },
-        t('home.seeDiagnostics'),
-      ),
+      { class: 'home-spiritual-footer center', attrs: { style: 'padding: var(--space-4) var(--space-2); margin-top: var(--space-2);' } },
+      el('p', { class: 'home-dua-text', attrs: { style: 'font-weight: 700; color: var(--gold, #b45309); font-size: var(--text-sm); margin: 0 0 4px 0;' }, text: '« صَدَقَةٌ جَارِيَةٌ • لَا تَنْسَوْنَا مِنْ صَالِحِ دُعَائِكُمْ »' }),
+      el('span', { class: 'tiny muted', text: `${t('app.name')} · 100% ${ctx.locale === 'ar' ? 'مجاني لوجه الله تعالى' : 'gratuit & sans publicité'}` }),
     ),
   );
-
-  root.append(
-    el(
-      'div',
-      { class: 'card tight' },
-      el(
-        'div',
-        { class: 'row-between' },
-        el(
-          'div',
-          { class: 'grow' },
-          el('strong', { class: 'small', text: t('diag.background') }),
-          el('div', { class: 'tiny muted', text: t('home.foregroundOnly') }),
-        ),
-        el(
-          'button',
-          { class: 'btn sm ghost', attrs: { type: 'button' }, on: { click: () => ctx.navigate('diagnostics') } },
-          t('home.seeDiagnostics'),
-        ),
-      ),
-    ),
-  );
-
-  if (settings.showHijri) {
-    root.append(el('p', { class: 'tiny muted center', text: t('home.hijriNote') }));
-  }
 
   return root;
 }
@@ -740,6 +743,189 @@ function labelForLocal(ctx: AppContext, event: PrayerEvent): string {
   const loc = ctx.store.get().location;
   return loc ? fmtTime(event.at, loc.timeZone, ctx.intl) : '—';
 }
+
+function buildSpiritualCard(
+  ctx: AppContext,
+  now: Date,
+  hijri: HijriDate | null,
+): HTMLElement {
+  const hour = now.getHours();
+  const dayOfWeek = now.getDay(); // 5 = Friday
+  const isFriday = dayOfWeek === 5;
+
+  let title = '';
+  let subtitle = '';
+  let iconName = 'sun';
+
+  if (isFriday && hour >= 6 && hour <= 18) {
+    title = ctx.locale === 'ar' ? 'جمعة مباركة' : ctx.locale === 'fr' ? 'Vendredi béni' : 'Blessed Friday';
+    subtitle = ctx.locale === 'ar' ? 'سورة الكهف والإكثار من الصلاة على النبي ﷺ' : 'Sourate Al-Kahf & Prières sur le Prophète ﷺ';
+    iconName = 'lantern';
+  } else if (hour >= 5 && hour < 12) {
+    title = ctx.locale === 'ar' ? 'أذكار الصباح (حصن اليوم)' : ctx.locale === 'fr' ? 'Adhkar du matin' : 'Morning Adhkar';
+    subtitle = ctx.locale === 'ar' ? '«أصبحنا وأصبح الملك لله، والحمد لله»' : 'Commencez votre journée sous la protection d’Allah';
+    iconName = 'sun';
+  } else if (hour >= 12 && hour < 17) {
+    title = ctx.locale === 'ar' ? 'أذكار ما بعد الصلاة واليوم' : ctx.locale === 'fr' ? 'Adhkar du jour' : 'Daily Adhkar';
+    subtitle = ctx.locale === 'ar' ? '«أستغفر الله وأتوب إليه»' : 'Invocations et rappels quotidiens';
+    iconName = 'beads';
+  } else if (hour >= 17 && hour < 21) {
+    title = ctx.locale === 'ar' ? 'أذكار المساء' : ctx.locale === 'fr' ? 'Adhkar du soir' : 'Evening Adhkar';
+    subtitle = ctx.locale === 'ar' ? '«أمسينا وأمسى الملك لله، والحمد لله»' : 'Protégez votre soirée par l’évocation d’Allah';
+    iconName = 'moon';
+  } else {
+    title = ctx.locale === 'ar' ? 'أذكار النوم والراحة' : ctx.locale === 'fr' ? 'Invocations avant de dormir' : 'Sleep Invocations';
+    subtitle = ctx.locale === 'ar' ? '«باسمك ربي وضعت جنبي وبك أرفعه»' : 'Remettez votre âme à Allah avant de dormir';
+    iconName = 'moon';
+  }
+
+  const card = el(
+    'div',
+    {
+      class: `card tight stack xs spiritual-living-card ${isFriday ? 'is-friday' : ''}`,
+      attrs: {
+        style:
+          'background: linear-gradient(135deg, rgba(6, 67, 50, 0.08) 0%, rgba(228, 203, 147, 0.14) 100%); border: 1px solid rgba(197, 155, 39, 0.35); cursor: pointer; margin-block-start: var(--space-2);',
+        role: 'button',
+        tabindex: '0',
+      },
+      on: {
+        click: () => {
+          if (isFriday) {
+            openFridayHub(ctx);
+          } else {
+            ctx.navigate('tasbih');
+          }
+        },
+      },
+    },
+    el(
+      'div',
+      { class: 'row-between align-center' },
+      el(
+        'div',
+        { class: 'row align-center gap-xs' },
+        icon(iconName, 18),
+        el('strong', { class: 'small', text: title }),
+      ),
+      el('span', { class: 'pill ok tiny', text: ctx.locale === 'ar' ? 'ابدأ الآن ➔' : 'Ouvrir ➔' }),
+    ),
+    el('p', { class: 'tiny muted', attrs: { style: 'margin-block-start: 2px;' }, text: subtitle }),
+  );
+
+  return card;
+}
+
+/**
+ * Blessed Friday Hub bottom sheet:
+ *  - Salawat on the Prophet counter with haptic feedback
+ *  - Surah Al-Kahf recitation passage (Light between two Fridays)
+ *  - Hour of Response reminder between Asr and Maghrib
+ */
+function openFridayHub(ctx: AppContext): void {
+  const t = ctx.t;
+  ctx.sheet(t('friday.title'), (close) => {
+    const wrap = el('div', { class: 'stack md friday-hub-modal', attrs: { style: 'padding-block: var(--space-2);' } });
+
+    // 1. Salawat on the Prophet interactive counter
+    let salawatCount = 0;
+    try {
+      const stored = sessionStorage.getItem('azan.friday_salawat');
+      if (stored) salawatCount = parseInt(stored, 10) || 0;
+    } catch {
+      // ignore
+    }
+
+    const countDisplay = el('span', {
+      class: 'friday-salawat-num',
+      attrs: { style: 'font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--primary); font-variant-numeric: tabular-nums;' },
+      text: String(salawatCount),
+    });
+
+    const tapSalawatBtn = el(
+      'button',
+      {
+        class: 'btn primary full-width stack xs align-center',
+        attrs: {
+          type: 'button',
+          style: 'min-height: 84px; padding: var(--space-3); border-radius: var(--radius-lg); text-align: center; cursor: pointer;',
+        },
+        on: {
+          click: () => {
+            salawatCount++;
+            countDisplay.textContent = String(salawatCount);
+            try {
+              sessionStorage.setItem('azan.friday_salawat', String(salawatCount));
+            } catch {
+              // ignore
+            }
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              if (salawatCount % 100 === 0) {
+                navigator.vibrate([70, 50, 70, 50, 100]);
+                toast(`ما شاء الله! أتممت ${salawatCount} صلاة على الحبيب المصطفى ﷺ`);
+              } else {
+                navigator.vibrate(25);
+              }
+            }
+          },
+        },
+      },
+      el('span', { attrs: { style: 'font-size: var(--text-base); font-family: var(--font-arabic, serif); font-weight: 600;' }, text: t('friday.salawatDua') }),
+      el('span', { class: 'tiny muted', text: `👆 ${t('friday.salawatTap')}` }),
+    );
+
+    const salawatCard = el(
+      'div',
+      { class: 'card stack xs', attrs: { style: 'background: var(--surface-2);' } },
+      el(
+        'div',
+        { class: 'row-between align-center' },
+        el('strong', { class: 'small', text: `✨ ${t('friday.salawatTitle')}` }),
+        countDisplay,
+      ),
+      tapSalawatBtn,
+    );
+
+    // 2. Surah Al-Kahf opening passage & merit
+    const kahfCard = el(
+      'div',
+      { class: 'card stack xs', attrs: { style: 'background: var(--surface-2);' } },
+      el('strong', { class: 'small', text: `📖 ${t('friday.kahfTitle')}` }),
+      el(
+        'p',
+        {
+          class: 'adhkar-arabic',
+          attrs: { lang: 'ar', dir: 'rtl', style: 'font-size: var(--text-sm); line-height: 2; margin: 0;' },
+          text: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ · الْحَمْدُ لِلَّهِ الَّذِي أَنزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ وَلَمْ يَجْعَل لَّهُ عِوَجًا ۜ قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ الْمُؤْمِنِينَ الَّذِينَ يَعْمَلُونَ الصَّالِحَاتِ أَنَّ لَهُمْ أَجْرًا حَسَنًا · مَّاكِثِينَ فِيهِ أَبَدًا · وَيُنذِرَ الَّذِينَ قَالُوا اتَّخَذَ اللَّهُ وَلَدًا · مَّا لَهُم بِهِ مِنْ عِلْمٍ وَلَا لِآبَائِهِمْ ۚ كَبُرَتْ كَلِمَةً تَخْرُجُ مِنْ أَفْوَاهِهِمْ ۚ إِن يَقُولُونَ إِلَّا كَذِبًا',
+        },
+      ),
+      el('span', { class: 'tiny muted', text: '«مَن قرأ سورةَ الكهفِ في يومِ الجمعةِ أضاء له من النُّورِ ما بينَ الجُمعتَينِ» (صحيح الترغيب)' }),
+    );
+
+    // 3. Hour of response (Between Asr and Maghrib)
+    const hourCard = el(
+      'div',
+      { class: 'card highlight stack xs', attrs: { style: 'border-inline-start: 3px solid var(--primary);' } },
+      el('strong', { class: 'small', text: `🤲 ${t('friday.hourDuaTitle')}` }),
+      el('p', { class: 'tiny muted', text: t('friday.hourDuaDesc') }),
+    );
+
+    wrap.append(
+      salawatCard,
+      kahfCard,
+      hourCard,
+      el('button', {
+        class: 'btn secondary full-width',
+        attrs: { type: 'button' },
+        text: t('common.close'),
+        on: { click: close },
+      }),
+    );
+
+    return wrap;
+  });
+}
+
 
 function buildFastingCard(
   ctx: AppContext,
@@ -900,3 +1086,4 @@ function buildFastingCard(
 
   return card;
 }
+

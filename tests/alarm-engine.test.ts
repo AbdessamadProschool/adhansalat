@@ -245,8 +245,9 @@ describe('alarm engine', () => {
     expect(payload.locale).toBe(store.get().locale);
     // The plan reaches one day further than the window (computeWindow is inclusive
     // of the current day), so allow that boundary instead of pinning an off-by-one.
+    // Alarms include both Adhan and pre-reminders (up to 10 alarms per day).
     expect(payload.alarms.length).toBeGreaterThanOrEqual(NATIVE_WINDOW_DAYS * 5);
-    expect(payload.alarms.length).toBeLessThanOrEqual((NATIVE_WINDOW_DAYS + 1) * 5);
+    expect(payload.alarms.length).toBeLessThanOrEqual((NATIVE_WINDOW_DAYS + 1) * 10);
     for (const alarm of payload.alarms) {
       expect(Number.isFinite(Date.parse(alarm.atIso))).toBe(true);
     }

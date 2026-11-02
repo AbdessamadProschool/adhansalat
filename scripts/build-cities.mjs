@@ -45,11 +45,48 @@ const PUBLIC_DIR = join(ROOT, 'public', 'data', 'cities');
 const INDEX_OUT = join(PUBLIC_DIR, 'index.json');
 const REPORT_OUT = join(ROOT, 'docs', 'GEONAMES.md');
 
-const PER_COUNTRY = 12;
-const MIN_POP_CAP = 50000;
 const MOROCCO = 'MA';
 /** Largest Moroccan localities kept in the initial bundle for instant results. */
 const CORE_MA_LIMIT = 300;
+
+/** Quotas for major Moroccan diaspora and Islamic countries */
+const COUNTRY_QUOTAS = {
+  FR: 80, // France (Paris, Marseille, Lyon, Toulouse, Nice, Strasbourg, Lille, etc.)
+  ES: 65, // Spain (Madrid, Barcelona, Valencia, Sevilla, Malaga, Murcia, Bilbao, etc.)
+  BE: 40, // Belgium (Brussels, Antwerp, Ghent, Charleroi, Liège, etc.)
+  IT: 50, // Italy (Rome, Milan, Naples, Turin, Florence, Bologna, etc.)
+  DE: 60, // Germany (Berlin, Hamburg, Munich, Cologne, Frankfurt, Düsseldorf, etc.)
+  NL: 40, // Netherlands (Amsterdam, Rotterdam, The Hague, Utrecht, etc.)
+  GB: 50, // UK (London, Birmingham, Manchester, Leeds, Glasgow, etc.)
+  DZ: 50, // Algeria (Algiers, Oran, Constantine, Annaba, Blida, Setif, etc.)
+  TN: 35, // Tunisia (Tunis, Sfax, Sousse, Kairouan, Bizerte, etc.)
+  EG: 50, // Egypt (Cairo, Alexandria, Giza, Port Said, Suez, Mansoura, etc.)
+  SA: 45, // Saudi Arabia (Riyadh, Jeddah, Mecca, Medina, Dammam, Ta'if, etc.)
+  AE: 20, // UAE (Dubai, Abu Dhabi, Sharjah, Ajman, Al Ain, etc.)
+  CA: 40, // Canada (Toronto, Montreal, Vancouver, Calgary, Ottawa, etc.)
+  US: 70, // USA (New York, LA, Chicago, Houston, Phoenix, etc.)
+  TR: 45, // Turkey (Istanbul, Ankara, Izmir, Bursa, etc.)
+  QA: 15, // Qatar
+  KW: 15, // Kuwait
+  OM: 15, // Oman
+  BH: 10, // Bahrain
+  JO: 25, // Jordan
+  LB: 20, // Lebanon
+  IQ: 30, // Iraq
+  SY: 25, // Syria
+  PS: 25, // Palestine
+  LY: 25, // Libya
+  MR: 20, // Mauritania
+  SD: 25, // Sudan
+  CH: 25, // Switzerland
+  SE: 20, // Sweden
+  NO: 15, // Norway
+  DK: 15, // Denmark
+  AT: 20, // Austria
+  PT: 25, // Portugal
+};
+const DEFAULT_PER_COUNTRY = 12;
+const DEFAULT_MIN_POP_CAP = 35000;
 
 /**
  * Feature classes accepted for Morocco. `P` is "populated place"; the codes are
@@ -229,6 +266,200 @@ function readTable(path) {
   return map;
 }
 
+const WORLD_ARABIC_OVERRIDES = {
+  // Arab capitals and major cities
+  Algiers: 'الجزائر',
+  Oran: 'وهران',
+  Constantine: 'قسنطينة',
+  Annaba: 'عنابة',
+  Blida: 'البليدة',
+  Setif: 'سطيف',
+  Sétif: 'سطيف',
+  Batna: 'باتنة',
+  Tlemcen: 'تلمسان',
+  Tunis: 'تونس',
+  Sfax: 'صفاقس',
+  Sousse: 'سوسة',
+  Kairouan: 'القيروان',
+  Bizerte: 'بنزرت',
+  Tripoli: 'طرابلس',
+  Benghazi: 'بنغازي',
+  Misrata: 'مصراتة',
+  Cairo: 'القاهرة',
+  Alexandria: 'الإسكندرية',
+  Giza: 'الجيزة',
+  'Port Said': 'بور سعيد',
+  Suez: 'السويس',
+  Mansoura: 'المنصورة',
+  Tanta: 'طنطا',
+  Aswan: 'أسوان',
+  Luxor: 'الأقصر',
+  Riyadh: 'الرياض',
+  Jeddah: 'جدة',
+  Mecca: 'مكة المكرمة',
+  Medina: 'المدينة المنورة',
+  Dammam: 'الدمام',
+  "Ta'if": 'الطائف',
+  Tabuk: 'تبوك',
+  Buraidah: 'بريدة',
+  'Khamis Mushait': 'خميس مشيط',
+  'Al Khobar': 'الخبر',
+  Dubai: 'دبي',
+  'Abu Dhabi': 'أبو ظبي',
+  Sharjah: 'الشارقة',
+  Ajman: 'عجمان',
+  'Ras Al Khaimah': 'رأس الخيمة',
+  Doha: 'الدوحة',
+  'Al Rayyan': 'الريان',
+  'Al Wakrah': 'الوكرة',
+  'Kuwait City': 'الكويت',
+  Muscat: 'مسقط',
+  Manama: 'المنامة',
+  Amman: 'عمان',
+  Zarqa: 'الزرقاء',
+  Irbid: 'إربد',
+  Beirut: 'بيروت',
+  Damascus: 'دمشق',
+  Aleppo: 'حلب',
+  Homs: 'حمص',
+  Hama: 'حماة',
+  Latakia: 'اللاذقية',
+  Baghdad: 'بغداد',
+  Basra: 'البصرة',
+  Mosul: 'الموصل',
+  Erbil: 'أربيل',
+  Najaf: 'النجف',
+  Karbala: 'كربلاء',
+  Jerusalem: 'القدس',
+  Gaza: 'غزة',
+  Hebron: 'الخليل',
+  Nablus: 'نابلس',
+  Jenin: 'جنين',
+  Ramallah: 'رام الله',
+  Bethlehem: 'بيت لحم',
+  Nouakchott: 'نواكشوط',
+  Nouadhibou: 'نواذيبو',
+  Khartoum: 'الخرطوم',
+  Omdurman: 'أم درمان',
+  // Europe & Americas major diaspora hubs
+  Paris: 'باريس',
+  Marseille: 'مارسيليا',
+  Lyon: 'ليون',
+  Toulouse: 'تولوز',
+  Nice: 'نيس',
+  Nantes: 'نانت',
+  Strasbourg: 'ستراسبورغ',
+  Montpellier: 'مونبلييه',
+  Bordeaux: 'بوردو',
+  Lille: 'ليل',
+  Rennes: 'رين',
+  Reims: 'ريمس',
+  Toulon: 'تولون',
+  Grenoble: 'غرونوبل',
+  Dijon: 'ديجون',
+  Angers: 'أنجيه',
+  Nîmes: 'نيم',
+  Brest: 'بريست',
+  Tours: 'تور',
+  Amiens: 'أميان',
+  Limoges: 'ليموج',
+  Metz: 'ميتز',
+  Besançon: 'بيزانسون',
+  Orléans: 'أورليان',
+  Rouen: 'روان',
+  Mulhouse: 'مولوز',
+  Caen: 'كان',
+  Nancy: 'نانسي',
+  Avignon: 'أفينيون',
+  Poitiers: 'بواتييه',
+  Versailles: 'فرساي',
+  Pau: 'بو',
+  Cannes: 'كان',
+  Calais: 'كاليه',
+  Madrid: 'مدريد',
+  Barcelona: 'برشلونة',
+  Valencia: 'بلنسية',
+  Sevilla: 'إشبيلية',
+  Zaragoza: 'سرقسطة',
+  Malaga: 'مالقة',
+  Murcia: 'مرسية',
+  Palma: 'بالما',
+  Bilbao: 'بلباو',
+  Alicante: 'أليكانتي',
+  Cordoba: 'قرطبة',
+  Granada: 'غرناطة',
+  Almeria: 'المرية',
+  Toledo: 'طليطلة',
+  Brussels: 'بروكسل',
+  Antwerp: 'أنتويرب',
+  Ghent: 'غنت',
+  Charleroi: 'شارلوروا',
+  Liège: 'لييج',
+  Bruges: 'بروج',
+  Namur: 'نامور',
+  Leuven: 'لوفان',
+  Mons: 'مونس',
+  Rome: 'روما',
+  Milan: 'ميلانو',
+  Naples: 'نابولي',
+  Turin: 'تورينو',
+  Palermo: 'باليرمو',
+  Genoa: 'جنوة',
+  Bologna: 'بولونيا',
+  Florence: 'فلورنسا',
+  Bari: 'باري',
+  Catania: 'كاتانيا',
+  Venice: 'البندقية',
+  Verona: 'فيرونا',
+  Berlin: 'برلين',
+  Hamburg: 'هامبورغ',
+  Munich: 'ميونخ',
+  Cologne: 'كولونيا',
+  Frankfurt: 'فرانكفورت',
+  Stuttgart: 'شتوتغارت',
+  Düsseldorf: 'دوسلدورف',
+  Dortmund: 'دورتموند',
+  Essen: 'إسن',
+  Bremen: 'بريمن',
+  Dresden: 'درسدن',
+  Hanover: 'هانوفر',
+  Nuremberg: 'نورمبرغ',
+  Duisburg: 'دويسبورغ',
+  Bonn: 'بون',
+  Amsterdam: 'أمستردام',
+  Rotterdam: 'روتردام',
+  'The Hague': 'لاهاي',
+  Utrecht: 'أوتريخت',
+  Eindhoven: 'آيندهوفن',
+  London: 'لندن',
+  Birmingham: 'برمنغهام',
+  Glasgow: 'غلاسكو',
+  Liverpool: 'ليفربول',
+  Manchester: 'مانشستر',
+  Leeds: 'ليدز',
+  Edinburgh: 'إدنبرة',
+  Montreal: 'مونتريال',
+  Toronto: 'تورونتو',
+  Vancouver: 'فانكوفر',
+  Ottawa: 'أوتاوا',
+  Quebec: 'كيبك',
+  Calgary: 'كالغاري',
+  Edmonton: 'إدمونتون',
+  'New York': 'نيويورك',
+  'Los Angeles': 'لوس أنجلوس',
+  Chicago: 'شيكاغو',
+  Houston: 'هيوستن',
+  Washington: 'واشنطن',
+  Boston: 'بوسطن',
+  Miami: 'ميامي',
+  Istanbul: 'إسطنبول',
+  Ankara: 'أنقرة',
+  Izmir: 'إزمير',
+  Bursa: 'بورصة',
+  Antalya: 'أنطاليا',
+  Konya: 'قونية',
+};
+
 function parseCities15000(text) {
   const byCountry = new Map();
   const counts = new Map();
@@ -236,11 +467,23 @@ function parseCities15000(text) {
     if (!line.trim()) continue;
     const f = line.split('\t');
     const [
-      geonameId, name, asciiName, , latRaw, lonRaw, , , countryCode, , admin1, ,
+      geonameId, name, asciiName, altsRaw, latRaw, lonRaw, , , countryCode, , admin1, ,
       , , popRaw, , , timezone, ,
     ] = f;
     const population = Number(popRaw) || 0;
     if (!timezone || !countryCode) continue;
+
+    const rawAlts = altsRaw ? altsRaw.split(',') : [];
+    let ar = WORLD_ARABIC_OVERRIDES[name] || WORLD_ARABIC_OVERRIDES[asciiName];
+    if (!ar) {
+      const picked = pickArabic(rawAlts);
+      if (picked) {
+        const cleaned = picked.replace(/\s*\([^)]*\)/g, '').split('،')[0].split(',')[0].trim();
+        if (cleaned.length >= 2 && !/[0-9A-Za-z]/.test(cleaned)) {
+          ar = cleaned;
+        }
+      }
+    }
 
     const entry = {
       id: Number(geonameId),
@@ -252,7 +495,10 @@ function parseCities15000(text) {
       tz: timezone,
       pop: population,
       admin: admin1 || undefined,
+      ar: ar || undefined,
     };
+    if (!entry.admin) delete entry.admin;
+    if (!entry.ar) delete entry.ar;
 
     const list = byCountry.get(countryCode) ?? [];
     list.push(entry);
@@ -261,12 +507,14 @@ function parseCities15000(text) {
   }
 
   const cities = [];
-  for (const [, list] of byCountry) {
+  for (const [cc, list] of byCountry) {
     list.sort((a, b) => b.pop - a.pop);
+    const maxForCountry = COUNTRY_QUOTAS[cc] ?? DEFAULT_PER_COUNTRY;
+    const isPrioritized = cc in COUNTRY_QUOTAS;
     let kept = 0;
     for (const city of list) {
-      if (kept >= PER_COUNTRY) break;
-      if (kept >= 1 && city.pop < MIN_POP_CAP) break;
+      if (kept >= maxForCountry) break;
+      if (!isPrioritized && kept >= 1 && city.pop < DEFAULT_MIN_POP_CAP) break;
       cities.push(city);
       kept += 1;
     }

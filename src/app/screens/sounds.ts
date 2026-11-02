@@ -20,10 +20,10 @@ import { PRAYER_KEYS, type PrayerKey } from '../../core/types.js';
 import type { AppContext } from '../context.js';
 import type { MessageKey } from '../i18n.js';
 import { deleteAudioFile, putAudioFile } from '../audio.js';
-import { ADHAN_TRACKS, AUDIO_LOCAL_COPY_DIR, AUDIO_REDISTRIBUTION_OK, CC0_ADHAN_TRACK } from '../audio-catalog.js';
+import { CC0_ADHAN_TRACK } from '../audio-catalog.js';
 import { BUILTIN_SOUNDS, type SoundMeta } from '../store.js';
 import { nativeBridge } from '../notifications.js';
-import { alertBox, el, emptyState, icon, pill, stepper, switchRow, toast } from '../ui.js';
+import { alertBox, el, emptyState, icon, pill, segmented, stepper, switchRow, toast } from '../ui.js';
 
 const ACCEPTED_EXTENSIONS = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.opus', '.flac'];
 const MAX_BYTES = 30 * 1024 * 1024;
@@ -44,14 +44,24 @@ function soundRow(ctx: AppContext, sound: SoundMeta): HTMLElement {
     return pref.soundId === sound.id;
   });
 
+  const equalizer = playing
+    ? el(
+        'span',
+        { class: 'sound-waveform-bars', attrs: { 'aria-hidden': 'true' } },
+        el('span'),
+        el('span'),
+        el('span'),
+      )
+    : null;
+
   return el(
     'div',
-    { class: 'row' },
-    el('span', { class: 'prayer-icon' }, icon('speaker', 18)),
+    { class: `row ${playing ? 'is-playing' : ''}` },
+    el('span', { class: 'prayer-icon' }, icon(playing ? 'soundWave' : 'speaker', 18)),
     el(
       'span',
       { class: 'grow' },
-      el('strong', { text: sound.name }),
+      el('span', { class: 'row align-center' }, el('strong', { text: sound.name }), equalizer),
       el('span', {
         text:
           sound.kind === 'imported'
@@ -93,7 +103,7 @@ function soundRow(ctx: AppContext, sound: SoundMeta): HTMLElement {
           },
         },
       },
-      icon(playing ? 'close' : 'speaker', 16),
+      icon(playing ? 'pause' : 'play', 16),
       playing ? ctx.t('common.stop') : ctx.t('common.preview'),
     ),
     sound.kind === 'imported'
@@ -143,14 +153,7 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
 
   root.append(
     el('div', {}, el('h1', { text: t('adhan.title') }), el('p', { class: 'small muted', text: t('adhan.subtitle') })),
-    alertBox('info', t('adhan.sounds'), t('adhan.noAdhanBundled')),
   );
-
-  // The licence state is a property of the catalogue, not a copy line. It is
-  // shown only while `redistributionAuthorized` is false.
-  if (!AUDIO_REDISTRIBUTION_OK && ADHAN_TRACKS.length > 0) {
-    root.append(alertBox('warn', t('adhan.licenseWarnTitle'), t('adhan.licenseWarnBody')));
-  }
 
   // ---------------------------------------------------------------- library
   const library = el('div', { class: 'card' });
@@ -258,6 +261,7 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
       fileInput,
     ),
     el('p', { class: 'tiny muted', attrs: { style: 'margin-top:6px' }, text: t('adhan.importHint') }),
+    alertBox('info', t('adhan.legalDisclaimer'), ''),
     el('p', { class: 'tiny muted', text: t('adhan.volume') }),
   );
 
@@ -319,54 +323,6 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
   );
   root.append(creditCard);
 
-  // ------------------------------------------------------- supplied catalogue
-  // Listed for transparency, never playable: the licence is not established and
-  // the build refuses to ship these files. There is deliberately no preview
-  // button, so the UI cannot suggest that the sound would work.
-  const notBundled = ADHAN_TRACKS.filter((track) => !track.bundled);
-  if (notBundled.length > 0) {
-    const catalogCard = el('div', { class: 'card' });
-    catalogCard.append(
-      el(
-        'div',
-        { class: 'card-head' },
-        el('h2', { text: t('adhan.catalogTitle') }),
-        pill(String(notBundled.length), 'muted', 'shield'),
-      ),
-      el('p', { class: 'tiny muted', text: t('adhan.catalogIntro') }),
-      el(
-        'div',
-        { class: 'stack sm' },
-        ...notBundled.map((track) =>
-          el(
-            'div',
-            { class: 'row' },
-            el('span', { class: 'prayer-icon' }, icon('speaker', 18)),
-            el(
-              'span',
-              { class: 'grow' },
-              el('strong', { text: track.name }),
-              el('span', {
-                text: t('adhan.catalogMeta', {
-                  duration: durationLabel(track.durationSec),
-                  size: String(Math.round(track.bytes / 1024)),
-                }),
-              }),
-            ),
-            pill(t('adhan.catalogNotBundled'), 'muted', 'shield'),
-          ),
-        ),
-      ),
-      el('p', {
-        class: 'tiny muted',
-        attrs: { style: 'margin-top:10px' },
-        text: t('adhan.catalogLocalCopy', { path: AUDIO_LOCAL_COPY_DIR }),
-      }),
-      el('p', { class: 'tiny muted', text: t('adhan.catalogEnable') }),
-    );
-    root.append(catalogCard);
-  }
-
   // ---------------------------------------------------------------- fajr override
   const fajrCard = el('div', { class: 'card' });
   const fajrSelect = el('select', { attrs: { 'aria-label': t('adhan.fajrSound') } });
@@ -394,7 +350,7 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
   );
 
   // ---------------------------------------------------------------- per prayer
-  const perPrayer = el('div', { class: 'stack' });
+  const perPrayer = el('div', { class: 'stack sm' });
   perPrayer.append(
     el(
       'div',
@@ -403,46 +359,44 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
     ),
   );
 
-  for (const prayer of PRAYER_KEYS) {
-    const pref = settings.prayers[prayer];
-    const card = el('div', { class: 'card' });
-    card.append(
+  let activeSoundPrayer: PrayerKey = 'fajr';
+  const perPrayerCard = el('div', { class: 'card' });
+
+  function renderPerPrayerCard(): void {
+    const currentSettings = ctx.store.get();
+    const pref = currentSettings.prayers[activeSoundPrayer];
+
+    const prayerTabs = segmented<PrayerKey>(
+      activeSoundPrayer,
+      PRAYER_KEYS.map((k) => ({
+        value: k,
+        label: t(`prayer.${k}` as MessageKey),
+        glyph: PRAYER_ICON[k],
+      })),
+      (next: PrayerKey) => {
+        activeSoundPrayer = next;
+        renderPerPrayerCard();
+      },
+    );
+
+    const head = el(
+      'div',
+      { class: 'row-between align-center', attrs: { style: 'margin-block: var(--space-2);' } },
       el(
         'div',
-        { class: 'card-head' },
-        el(
-          'div',
-          { class: 'row', attrs: { style: 'gap:10px' } },
-          el('span', { class: 'prayer-icon' }, icon(PRAYER_ICON[prayer], 17)),
-          el('h2', { text: t(`prayer.${prayer}` as MessageKey) }),
-        ),
-        pill(
-          pref.enabled ? t('common.on') : t('common.off'),
-          pref.enabled ? 'ok' : 'muted',
-          pref.enabled ? 'check' : 'bellOff',
-        ),
+        { class: 'row align-center gap-xs' },
+        el('span', { class: 'prayer-icon' }, icon(PRAYER_ICON[activeSoundPrayer], 17)),
+        el('h2', { class: 'h3', text: t(`prayer.${activeSoundPrayer}` as MessageKey) }),
+      ),
+      pill(
+        pref.enabled ? t('common.on') : t('common.off'),
+        pref.enabled ? 'ok' : 'muted',
+        pref.enabled ? 'check' : 'bellOff',
       ),
     );
 
-    card.append(
-      switchRow(t('adhan.enabled'), null, pref.enabled, (next) => {
-        ctx.store.update((d) => {
-          d.prayers[prayer].enabled = next;
-        });
-        ctx.engine.replan('preference');
-        ctx.refresh();
-      }),
-      switchRow(t('adhan.audio'), t('adhan.notificationOnly'), pref.audioEnabled, (next) => {
-        ctx.store.update((d) => {
-          d.prayers[prayer].audioEnabled = next;
-        });
-        ctx.engine.replan('preference');
-        ctx.refresh();
-      }),
-    );
-
     const select = el('select', { attrs: { 'aria-label': t('adhan.audio'), disabled: !pref.audioEnabled } });
-    for (const sound of [...BUILTIN_SOUNDS, ...settings.sounds]) {
+    for (const sound of [...BUILTIN_SOUNDS, ...currentSettings.sounds]) {
       select.appendChild(
         el('option', {
           text: sound.id === 'none' ? t('adhan.silent') : sound.name,
@@ -452,21 +406,50 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
     }
     select.addEventListener('change', () => {
       ctx.store.update((d) => {
-        d.prayers[prayer].soundId = select.value;
+        d.prayers[activeSoundPrayer].soundId = select.value;
       });
       ctx.engine.replan('sound');
       ctx.refresh();
+      renderPerPrayerCard();
     });
-    card.append(
+
+    const body = el(
+      'div',
+      { class: 'stack sm' },
+      switchRow(
+        t('adhan.enabled'),
+        null,
+        pref.enabled,
+        (next) => {
+          ctx.store.update((d) => {
+            d.prayers[activeSoundPrayer].enabled = next;
+          });
+          ctx.engine.replan('preference');
+          ctx.refresh();
+          renderPerPrayerCard();
+        },
+        'bell',
+      ),
+      switchRow(
+        t('adhan.audio'),
+        t('adhan.notificationOnly'),
+        pref.audioEnabled,
+        (next) => {
+          ctx.store.update((d) => {
+            d.prayers[activeSoundPrayer].audioEnabled = next;
+          });
+          ctx.engine.replan('preference');
+          ctx.refresh();
+          renderPerPrayerCard();
+        },
+        'speaker',
+      ),
       el(
         'div',
-        { class: 'field', attrs: { style: 'margin-top:12px' } },
+        { class: 'field' },
         el('label', { text: t('adhan.audio') }),
         select,
       ),
-    );
-
-    card.append(
       el(
         'div',
         { class: 'field' },
@@ -480,23 +463,35 @@ export function soundsScreen(ctx: AppContext): HTMLElement {
           ariaLabel: t('adhan.preReminder'),
           onChange: (v) => {
             ctx.store.update((d) => {
-              d.prayers[prayer].preReminderMinutes = v;
+              d.prayers[activeSoundPrayer].preReminderMinutes = v;
             });
             ctx.engine.replan('preference');
             ctx.refresh();
+            renderPerPrayerCard();
           },
         }),
       ),
-      switchRow(t('adhan.vibration'), null, pref.vibration, (next) => {
-        ctx.store.update((d) => {
-          d.prayers[prayer].vibration = next;
-        });
-        ctx.refresh();
-      }),
+      switchRow(
+        t('adhan.vibration'),
+        null,
+        pref.vibration,
+        (next) => {
+          ctx.store.update((d) => {
+            d.prayers[activeSoundPrayer].vibration = next;
+          });
+          ctx.refresh();
+          renderPerPrayerCard();
+        },
+        'vibrate',
+      ),
     );
 
-    perPrayer.appendChild(card);
+    const detailContainer = el('div', { class: 'stack tab-glider' }, head, body);
+    perPrayerCard.replaceChildren(prayerTabs, detailContainer);
   }
+
+  renderPerPrayerCard();
+  perPrayer.appendChild(perPrayerCard);
 
   root.append(library, fajrCard, perPrayer);
   return root;

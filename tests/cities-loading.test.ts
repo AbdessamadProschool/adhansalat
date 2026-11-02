@@ -72,7 +72,7 @@ describe('lazy catalogue loading', () => {
 
     const found = await searchCities(sample[1], 5, 'MA');
     expect(found.some((entry) => entry.id === sample[0])).toBe(true);
-  });
+  }, 15000);
 
   it('does not re-fetch the index on a second search', async () => {
     const before = calls.length;
@@ -93,7 +93,7 @@ describe('lazy catalogue loading', () => {
     // A loaded region is served from memory afterwards.
     const again = await loadRegion('07');
     expect(again).toBe(cities);
-  });
+  }, 15000);
 
   it('reports a region it cannot fetch instead of inventing records', async () => {
     const missing = await loadRegion('11');

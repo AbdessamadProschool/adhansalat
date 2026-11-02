@@ -549,6 +549,12 @@ export class AlarmEngine {
         detail = err instanceof Error ? err.message : String(err);
         this.store.log('error', 'alarm.audio.failed', `${alarm.eventKey}: ${detail}`);
       }
+    } else if (alarm.kind === 'pre-reminder' && pref.audioEnabled) {
+      try {
+        await this.player.play('chime-calm');
+      } catch {
+        /* gentle reminder chime */
+      }
     }
 
     const rec = this.record({

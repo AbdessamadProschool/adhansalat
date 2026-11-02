@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateQibla,
+  calculateSunPosition,
   compassPointFromBearing,
+  estimateMagneticDeclination,
   KAABA_COORDINATES,
 } from '../src/core/qibla.js';
 
@@ -104,5 +106,24 @@ describe('Qibla calculation', () => {
   it('handles negative or overflow degrees cleanly', () => {
     expect(compassPointFromBearing(-90)).toBe('W');
     expect(compassPointFromBearing(450)).toBe('E');
+  });
+
+  it('calculates astronomical Sun position accurately', () => {
+    // Solar Noon in Casablanca
+    const sun = calculateSunPosition(new Date('2026-11-01T12:15:00Z'), {
+      latitude: 33.5731,
+      longitude: -7.5898,
+    });
+    expect(sun.azimuth).toBeGreaterThan(178);
+    expect(sun.azimuth).toBeLessThan(183);
+    expect(sun.altitude).toBeGreaterThan(40);
+    expect(sun.isVisible).toBe(true);
+  });
+
+  it('estimates realistic magnetic declination for Morocco', () => {
+    const declination = estimateMagneticDeclination(33.5731, -7.5898, 2026);
+    // Morocco declination is between -3° and -1°
+    expect(declination).toBeLessThan(0);
+    expect(declination).toBeGreaterThan(-4.5);
   });
 });

@@ -1,12 +1,13 @@
 {
   "name": "azan-global",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Azan Global - prayer times engine, offline-first PWA and Android native alarm module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && node scripts/check-csp.mjs && node scripts/check-release-assets.mjs && vite build && node scripts/check-csp.mjs dist/index.html",
+    "build": "tsc --noEmit && node scripts/security-audit.mjs && node scripts/check-csp.mjs && node scripts/check-release-assets.mjs && vite build && node scripts/check-csp.mjs dist/index.html",
+    "audit:security": "node scripts/security-audit.mjs",
     "check:release-assets": "node scripts/check-release-assets.mjs",
     "check:csp": "node scripts/check-csp.mjs",
     "preview": "vite preview --port 4173",

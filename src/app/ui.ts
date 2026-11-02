@@ -74,6 +74,14 @@ const PATHS: Record<string, string> = {
   bellOff: '<path d="M18 15v-4a6 6 0 0 0-9.3-5.1M6 6.4A6 6 0 0 0 6 11v4l-2 3h12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 21h4M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
   pin: '<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>',
   moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+  // Dedicated Flat Icons for each prayer time (senior visual accessibility)
+  fajr: '<path d="M3 18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 18a5 5 0 0 1 10 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 5v4M7 8l2 2M17 8l-2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  sunrise: '<path d="M3 18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="11" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M4.9 6.9l1.4 1.4M19.1 6.9l-1.4 1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  dhuhr: '<circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  asr: '<circle cx="8" cy="8" r="3.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 2.5v2M2.5 8H4.5M4 4l1.5 1.5M12 8h1M8 12v1M3 20h18M9 20l7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  maghrib: '<path d="M3 17h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 17a5 5 0 0 1 10 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v5M9.5 11.5 12 14l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  isha: '<path d="M19 13.5A7.5 7.5 0 0 1 10.5 5a7.5 7.5 0 1 0 8.5 8.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="18.5" cy="5.5" r="1" fill="currentColor"/><circle cx="14" cy="3" r="0.8" fill="currentColor"/>',
+  speakerMute: '<path d="M11 5 6.5 9H3v6h3.5L11 19z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M22 9l-6 6M16 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   sun: '<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   checkCircle:
@@ -104,6 +112,8 @@ const PATHS: Record<string, string> = {
     '<path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="6" r="2" fill="currentColor"/><circle cx="16" cy="12" r="2" fill="currentColor"/><circle cx="10" cy="18" r="2" fill="currentColor"/>',
   beads:
     '<circle cx="12" cy="3.4" r="1.5" fill="currentColor"/><circle cx="17.2" cy="5" r="1.5" fill="currentColor"/><circle cx="20.4" cy="9.1" r="1.5" fill="currentColor"/><circle cx="20.4" cy="14.2" r="1.5" fill="currentColor"/><circle cx="17.4" cy="18.2" r="1.5" fill="currentColor"/><circle cx="12.6" cy="20.2" r="1.5" fill="currentColor"/><circle cx="7.4" cy="19.2" r="1.5" fill="currentColor"/><circle cx="3.8" cy="15.6" r="1.5" fill="currentColor"/><circle cx="3.4" cy="10.5" r="1.5" fill="currentColor"/><circle cx="6" cy="6.1" r="1.5" fill="currentColor"/><path d="M12 21v1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  quran:
+    '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="11" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8.5v5M9.5 11h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
   book:
     '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 7h8M8 11h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
   printer:
@@ -112,6 +122,44 @@ const PATHS: Record<string, string> = {
     '<circle cx="18" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
   reset:
     '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  play: '<path d="M7 5l12 7-12 7z" fill="currentColor"/>',
+  pause: '<path d="M6 5h4v14H6zm8 0h4v14h-4z" fill="currentColor"/>',
+  soundWave:
+    '<path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 11v2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+  lantern:
+    '<path d="M12 2v2M8 4h8l-1 4H9zm-2 4h12l-2 10H8zm2 10h8l-1 3H9zm3 3v1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="11" r="1.5" fill="currentColor"/>',
+  duaHands:
+    '<path d="M7 19c0-4 2.5-7 5-11 2.5 4 5 7 5 11-2 1.5-4 1.5-5 1.5s-3 0-5-1.5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v12" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/>',
+  mosque:
+    '<path d="M12 3c-2.5 2-4 4.5-4 7v11h8V10c0-2.5-1.5-5-4-7zM4 12v9h4v-9zm12 0v9h4v-9zM12 2v2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+  bubbleLevel:
+    '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>',
+  sparkle:
+    '<path d="m12 3 2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z" fill="currentColor"/>',
+  satellite:
+    '<circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 17l-3.5 3.5M17 7l3.5-3.5M14.5 9.5l3.5-3.5a2 2 0 1 1 2.8 2.8L17.3 12.3M9.5 14.5l-3.5 3.5a2 2 0 1 1-2.8-2.8L6.7 11.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+  calibrate:
+    '<path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2" fill="currentColor"/>',
+  arrowRight:
+    '<path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  arrowLeft:
+    '<path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  crescentBadge:
+    '<path d="M17 12a5 5 0 1 1-5-5 4 4 0 0 0 5 5z" fill="currentColor"/>',
+  folderAudio:
+    '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10 13v3.5a1.5 1.5 0 1 0 1.5-1.5H10v-3l4-1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+  calculator:
+    '<rect x="4" y="2" width="16" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+  calendarToday:
+    '<rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/>',
+  fastingBowl:
+    '<path d="M4 11h16a8 8 0 0 1-16 0zM12 19v3M8 22h8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7c0-2 1-3 1-3s1 1 1 3M14 7c0-2 1-3 1-3s1 1 1 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  undo:
+    '<path d="M9 14 4 9l5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  vibrate:
+    '<rect x="7" y="4" width="10" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M11 17h2M3 8v8M21 8v8M1 10v4M23 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  plusCircle:
+    '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
 };
 
 export function icon(name: keyof typeof PATHS | string, size = 22): SVGSVGElement {
@@ -341,6 +389,7 @@ export function switchRow(
   description: string | null,
   checked: boolean,
   onChange: (next: boolean) => void,
+  glyph?: keyof typeof PATHS | string,
 ): HTMLElement {
   const input = el('input', {
     attrs: { type: 'checkbox', role: 'switch' },
@@ -355,7 +404,12 @@ export function switchRow(
     el(
       'span',
       { class: 'switch-text' },
-      el('strong', { text: label }),
+      el(
+        'strong',
+        { class: 'row align-center', attrs: { style: 'gap: 6px;' } },
+        glyph ? icon(glyph, 18) : null,
+        el('span', { text: label }),
+      ),
       description ? el('span', { text: description }) : null,
     ),
     input,
@@ -402,27 +456,35 @@ export function stepper(options: {
   );
 }
 
+export interface SegmentedChoice<T extends string> {
+  value: T;
+  label: string;
+  glyph?: string;
+}
+
 export function segmented<T extends string>(
   value: T,
-  choices: Array<{ value: T; label: string }>,
+  choices: Array<SegmentedChoice<T>>,
   onChange: (v: T) => void,
 ): HTMLElement {
   const wrap = el('div', { class: 'segmented', attrs: { role: 'group' } });
   for (const choice of choices) {
-    wrap.appendChild(
-      el('button', {
-        text: choice.label,
-        attrs: { type: 'button', 'aria-pressed': String(choice.value === value) },
-        on: {
-          click: () => {
-            Array.from(wrap.children).forEach((child, index) =>
-              child.setAttribute('aria-pressed', String(choices[index]?.value === choice.value)),
-            );
-            onChange(choice.value);
-          },
+    const btn = el('button', {
+      attrs: { type: 'button', 'aria-pressed': String(choice.value === value) },
+      on: {
+        click: () => {
+          Array.from(wrap.children).forEach((child, index) =>
+            child.setAttribute('aria-pressed', String(choices[index]?.value === choice.value)),
+          );
+          onChange(choice.value);
         },
-      }),
-    );
+      },
+    });
+    if (choice.glyph) {
+      btn.appendChild(icon(choice.glyph, 15));
+    }
+    btn.appendChild(el('span', { text: choice.label }));
+    wrap.appendChild(btn);
   }
   return wrap;
 }

@@ -2,6 +2,7 @@ package app.azan.global
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -220,6 +221,47 @@ class AzanBridge(private val activity: MainActivity) {
         activity.runOnUiThread {
             activity.startActivity(Intent(activity, NativeDiagnosticsActivity::class.java))
         }
+    }
+
+    @JavascriptInterface
+    fun isAdhanPlaying(): Boolean = AdhanService.playing
+
+    @JavascriptInterface
+    fun stopAdhan() {
+        activity.runOnUiThread {
+            AdhanService.stop(activity)
+        }
+    }
+
+    @JavascriptInterface
+    fun getNativeCompassHeading(): Float = activity.getNativeHeading()
+
+    @JavascriptInterface
+    fun getGeomagneticDeclination(latitude: Double, longitude: Double, altitude: Double): Float {
+        return try {
+            val field = android.hardware.GeomagneticField(
+                latitude.toFloat(),
+                longitude.toFloat(),
+                altitude.toFloat(),
+                System.currentTimeMillis()
+            )
+            field.declination
+        } catch (_: Exception) {
+            0f
+        }
+    }
+
+    @JavascriptInterface
+    fun setMosqueMode(durationMinutes: Int) {
+        val prefs = activity.getSharedPreferences("auto_silence_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putInt("mosque_mode_minutes", durationMinutes).apply()
+        Log.i(TAG, "setMosqueMode: $durationMinutes minutes")
+    }
+
+    @JavascriptInterface
+    fun getMosqueMode(): Int {
+        val prefs = activity.getSharedPreferences("auto_silence_prefs", Context.MODE_PRIVATE)
+        return prefs.getInt("mosque_mode_minutes", 0)
     }
 
     private fun isNotificationGranted(): Boolean {

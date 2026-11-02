@@ -6,18 +6,40 @@ import {
 } from '../src/core/adhkar.js';
 
 describe('Adhkar Supplications module', () => {
-  it('contains verified authentic collections for morning, evening, after-prayer, ramadan, and essential', () => {
+  it('contains verified authentic collections for morning, evening, after-prayer, sleep, ramadan, and essential', () => {
     const morning = getAdhkarByCategory('morning');
     const evening = getAdhkarByCategory('evening');
     const afterPrayer = getAdhkarByCategory('after-prayer');
+    const sleep = getAdhkarByCategory('sleep');
+    const ayatFadila = getAdhkarByCategory('ayat-fadila');
     const ramadan = getAdhkarByCategory('ramadan');
     const essential = getAdhkarByCategory('essential');
 
     expect(morning.length).toBeGreaterThan(0);
     expect(evening.length).toBeGreaterThan(0);
     expect(afterPrayer.length).toBeGreaterThan(0);
+    expect(sleep.length).toBeGreaterThan(0);
+    expect(ayatFadila.length).toBeGreaterThan(0);
     expect(ramadan.length).toBeGreaterThan(0);
     expect(essential.length).toBeGreaterThan(0);
+  });
+
+  it('includes noble Ayat Al-Fadila collection (Al-Fatiha, Al-Kursi, Al-Kahf, Al-Baqarah, An-Nur, Al-Hashr)', () => {
+    const fatiha = ADHKAR_LIST.find((a) => a.id === 'ayat-fadila-fatiha');
+    expect(fatiha).toBeDefined();
+    expect(fatiha!.arabic).toContain('الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ');
+
+    const kahf = ADHKAR_LIST.find((a) => a.id === 'ayat-fadila-kahf-first10');
+    expect(kahf).toBeDefined();
+    expect(kahf!.arabic).toContain('أَصْحَابَ الْكَهْفِ');
+
+    const hashr = ADHKAR_LIST.find((a) => a.id === 'ayat-fadila-hashr-last');
+    expect(hashr).toBeDefined();
+    expect(hashr!.arabic).toContain('الْمَلِكُ الْقُدُّوسُ السَّلَامُ');
+
+    const shifa = ADHKAR_LIST.find((a) => a.id === 'ayat-fadila-shifa');
+    expect(shifa).toBeDefined();
+    expect(shifa!.arabic).toContain('وَيَشْفِ صُدُورَ قَوْمٍ مُّؤْمِنِينَ');
   });
 
   it('verifies that every supplication has required fields and verified citations', () => {

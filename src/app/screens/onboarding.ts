@@ -241,6 +241,7 @@ export function onboardingScreen(ctx: AppContext): HTMLElement {
 function locationSheetForGps(ctx: AppContext, close: () => void): HTMLElement {
   const wrap = el('div', { class: 'stack' });
   const status = el('div', { class: 'small muted', attrs: { role: 'status', 'aria-live': 'polite' } });
+  const defaultContent = [icon('compass'), el('span', { text: ctx.t('loc.gps') })];
   const button = el(
     'button',
     {
@@ -254,9 +255,16 @@ function locationSheetForGps(ctx: AppContext, close: () => void): HTMLElement {
           }
           status.textContent = ctx.t('loc.detecting');
           button.setAttribute('disabled', 'true');
+          button.classList.add('is-loading');
+          button.replaceChildren(
+            el('span', { class: 'spinner' }),
+            el('span', { text: ctx.t('loc.detecting') }),
+          );
           navigator.geolocation.getCurrentPosition(
             (position) => {
               button.removeAttribute('disabled');
+              button.classList.remove('is-loading');
+              button.replaceChildren(...defaultContent);
               let tz = 'UTC';
               try {
                 tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -278,6 +286,8 @@ function locationSheetForGps(ctx: AppContext, close: () => void): HTMLElement {
             },
             (error) => {
               button.removeAttribute('disabled');
+              button.classList.remove('is-loading');
+              button.replaceChildren(...defaultContent);
               status.textContent =
                 error.code === error.PERMISSION_DENIED ? ctx.t('loc.gpsDenied') : ctx.t('loc.gpsUnavailable');
             },
@@ -286,7 +296,7 @@ function locationSheetForGps(ctx: AppContext, close: () => void): HTMLElement {
         },
       },
     },
-    ctx.t('loc.gps'),
+    ...defaultContent,
   );
   wrap.append(button, status, el('p', { class: 'tiny muted', text: ctx.t('loc.gpsDesc') }));
   return wrap;

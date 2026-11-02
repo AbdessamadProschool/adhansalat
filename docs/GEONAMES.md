@@ -1,6 +1,6 @@
 # GeoNames — vérification du catalogue
 
-Rapport généré par `scripts/build-cities.mjs` le 2026-10-28T20:37:58.327Z.
+Rapport généré par `scripts/build-cities.mjs` le 2026-11-01T02:50:51.657Z.
 Les chiffres ci-dessous proviennent du fichier réel `data-source\MA.txt`
 (153 872 lignes), et non d'une estimation.
 
@@ -97,7 +97,7 @@ Entrées écartées pour incohérence de coordonnées ou de fuseau :
 
 ## Sorties
 
-- `src/core/data/cities-core.json` — 1 996 entrées, 311 KiB : **embarqué**.
+- `src/core/data/cities-core.json` — 2 866 entrées, 471 KiB : **embarqué**.
 - `public/data/cities/index.json` — 46 039 entrées, 2220 KiB : chargé à la demande.
 - `public/data/cities/ma-XX.json` — 13 fichiers, 9.23 MiB au total : chargés par région.
 - `src/core/data/cities.json` — dataset complet filtré, réservé aux tests et rapports.

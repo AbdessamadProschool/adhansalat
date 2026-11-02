@@ -270,12 +270,27 @@ describe('stored preferences migrate away from unplayable sounds', () => {
       setItem: (key: string, value: string) => map.set(key, value),
       removeItem: (key: string) => map.delete(key),
     };
-    const previous = (globalThis as { localStorage?: unknown }).localStorage;
-    (globalThis as { localStorage?: unknown }).localStorage = stub;
+    let previous: unknown;
+    try {
+      previous = (globalThis as { localStorage?: unknown }).localStorage;
+    } catch {
+      previous = undefined;
+    }
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: stub,
+      configurable: true,
+      writable: true,
+    });
     try {
       return new SettingsStore().get();
     } finally {
-      (globalThis as { localStorage?: unknown }).localStorage = previous;
+      try {
+        if (previous !== undefined) {
+          (globalThis as { localStorage?: unknown }).localStorage = previous;
+        }
+      } catch {
+        // ignore
+      }
     }
   }
 

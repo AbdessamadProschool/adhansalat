@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import java.time.Instant
@@ -57,6 +59,13 @@ object Notifications {
             description = context.getString(R.string.channel_pre_desc)
             enableVibration(true)
             vibrationPattern = longArrayOf(0, 180, 90, 180)
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val audioAttrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            setSound(soundUri, audioAttrs)
         }
 
         val status = NotificationChannel(
@@ -122,7 +131,6 @@ object Notifications {
         val builder = base(context, CHANNEL_ADHAN, title, body)
             .setOngoing(ongoing)
             .addAction(0, context.getString(R.string.notif_stop), stopIntent(context))
-            .addAction(0, context.getString(R.string.notif_diagnostics), diagnosticsIntent(context))
 
         // Warn only when no audio source can resolve the id: a bundled chime, or a
         // private copy of an imported file. Both are valid; saying "unavailable"
@@ -163,7 +171,10 @@ object Notifications {
             prayerLabel(context, spec.prayer),
             clock(spec.atMillis, timeZone),
         )
+        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notification = base(context, CHANNEL_PRE, title, body)
+            .setDefaults(NotificationCompat.DEFAULT_VIBRATE or NotificationCompat.DEFAULT_SOUND)
+            .setSound(soundUri)
             .setAutoCancel(true)
             .build()
         notifySafely(context, PRE_REMINDER_ID, notification)

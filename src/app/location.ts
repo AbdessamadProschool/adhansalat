@@ -121,6 +121,7 @@ export function openLocationSheet(ctx: AppContext, close: () => void): HTMLEleme
   // ---------------------------------------------------------------- GPS
   const gpsStatus = el('div', { class: 'small muted', attrs: { role: 'status', 'aria-live': 'polite' } });
   const gpsProposal = el('div', { class: 'stack sm', attrs: { 'aria-live': 'polite' } });
+  const defaultGpsContent = [icon('pin', 17), el('span', { text: t('loc.gps') })];
   const gpsButton = el(
     'button',
     {
@@ -135,9 +136,16 @@ export function openLocationSheet(ctx: AppContext, close: () => void): HTMLEleme
           gpsStatus.textContent = t('loc.detecting');
           gpsProposal.replaceChildren();
           gpsButton.setAttribute('disabled', 'true');
+          gpsButton.classList.add('is-loading');
+          gpsButton.replaceChildren(
+            el('span', { class: 'spinner' }),
+            el('span', { text: t('loc.detecting') }),
+          );
           navigator.geolocation.getCurrentPosition(
             (position) => {
               gpsButton.removeAttribute('disabled');
+              gpsButton.classList.remove('is-loading');
+              gpsButton.replaceChildren(...defaultGpsContent);
               const { latitude, longitude, altitude } = position.coords;
               let tz = 'UTC';
               try {
@@ -229,6 +237,8 @@ export function openLocationSheet(ctx: AppContext, close: () => void): HTMLEleme
             },
             (error) => {
               gpsButton.removeAttribute('disabled');
+              gpsButton.classList.remove('is-loading');
+              gpsButton.replaceChildren(...defaultGpsContent);
               gpsStatus.textContent =
                 error.code === error.PERMISSION_DENIED
                   ? t('loc.gpsDenied')
@@ -241,8 +251,7 @@ export function openLocationSheet(ctx: AppContext, close: () => void): HTMLEleme
         },
       },
     },
-    icon('pin', 17),
-    t('loc.gps'),
+    ...defaultGpsContent,
   );
 
   container.append(

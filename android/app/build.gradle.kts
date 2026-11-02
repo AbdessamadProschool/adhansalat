@@ -67,8 +67,8 @@ android {
         applicationId = "app.azan.global"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
 
         // The web UI is already localized; keep the native shell to the same three
         // languages instead of shipping every Android translation.

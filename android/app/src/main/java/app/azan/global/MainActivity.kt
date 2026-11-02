@@ -3,7 +3,13 @@ package app.azan.global
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.GeomagneticField
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -36,10 +42,17 @@ import androidx.webkit.WebViewAssetLoader
  * tested and served as a PWA. The native side adds the only thing a browser cannot
  * provide — alarms that survive the app being closed — and nothing else.
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
     private lateinit var webView: WebView
     private var mainFrameFailed = false
+
+    private var sensorManager: SensorManager? = null
+    private var rotationSensor: Sensor? = null
+    @Volatile
+    private var nativeAzimuth: Float = -1f
+    private val rotationMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
 
     /** The audio file the user picked, kept so [AzanBridge.importSound] can copy it. */
     data class PickedSound(val uri: Uri, val name: String, val mime: String)
@@ -128,6 +141,10 @@ class MainActivity : ComponentActivity() {
 
         Notifications.createChannels(LocaleHelper.wrap(this, ScheduleStore.readLocale(this)))
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+            ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ORIENTATION)
+
         webView = WebView(this).apply {
             setBackgroundColor(ContextCompat.getColor(context, R.color.azan_ivory))
             settings.apply {
@@ -213,11 +230,22 @@ class MainActivity : ComponentActivity() {
                     view: WebView,
                     request: WebResourceRequest,
                 ): Boolean {
-                    // Only the bundled origin may load. There is no INTERNET
-                    // permission, so an external URL would fail anyway; blocking it
-                    // here keeps the WebView from showing a browser error page.
                     val uri = request.url
-                    return uri.host != WebAssetHandler.ASSET_DOMAIN
+                    if (uri.host != WebAssetHandler.ASSET_DOMAIN) {
+                        if (uri.scheme == "http" || uri.scheme == "https") {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                                    addCategory(Intent.CATEGORY_BROWSABLE)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                startActivity(intent)
+                            } catch (_: Exception) {
+                                // No external browser app found
+                            }
+                        }
+                        return true
+                    }
+                    return false
                 }
 
                 override fun onReceivedError(
@@ -323,8 +351,32 @@ class MainActivity : ComponentActivity() {
         // The user may have granted notifications, exact alarms or a battery
         // exemption in the system UI while the app was in the background.
         Notifications.createChannels(LocaleHelper.wrap(this, ScheduleStore.readLocale(this)))
+        rotationSensor?.let {
+            sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
         refreshPermissions()
     }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event == null) return
+        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+            SensorManager.getOrientation(rotationMatrix, orientationAngles)
+            val deg = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+            nativeAzimuth = (deg + 360f) % 360f
+        } else if (event.sensor.type == Sensor.TYPE_ORIENTATION) {
+            nativeAzimuth = (event.values[0] + 360f) % 360f
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    fun getNativeHeading(): Float = nativeAzimuth
 
     /** Tells the web diagnostics screen to re-read the native permission state. */
     private fun refreshPermissions() {

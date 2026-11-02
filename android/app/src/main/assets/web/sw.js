@@ -5,8 +5,8 @@ const CACHE_VERSION = "v2";
 const CACHE = 'azan-' + CACHE_VERSION;
 const PRECACHE = [
   "/",
-  "/assets/index-yLYqV6Xc.css",
-  "/assets/index-CQfSeBez.js",
+  "/assets/index-BG7uchk6.css",
+  "/assets/index--pTM2st3.js",
   "/manifest.webmanifest",
   "/robots.txt",
   "/icons/icon-192.png",

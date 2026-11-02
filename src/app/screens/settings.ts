@@ -6,6 +6,7 @@
  */
 
 import { countryName } from '../../core/profiles.js';
+import { getMethod } from '../../core/methods.js';
 import { LOCALES, LOCALE_LABELS, type Locale, type MessageKey } from '../i18n.js';
 import type { AppContext } from '../context.js';
 import type { ThemeMode } from '../store.js';
@@ -14,7 +15,7 @@ import { requestNotificationPermission, nativeBridge } from '../notifications.js
 import { openLocationSheet } from '../location.js';
 import { alertBox, closeSheet, confirmDialog, el, icon, pill, segmented, switchRow, toast } from '../ui.js';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.2.0';
 
 export function settingsScreen(ctx: AppContext): HTMLElement {
   const t = ctx.t;
@@ -51,9 +52,9 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
     segmented<ThemeMode>(
       settings.theme,
       [
-        { value: 'auto', label: t('settings.theme.auto') },
-        { value: 'light', label: t('settings.theme.light') },
-        { value: 'dark', label: t('settings.theme.dark') },
+        { value: 'auto', label: t('settings.theme.auto'), glyph: 'sliders' },
+        { value: 'light', label: t('settings.theme.light'), glyph: 'sun' },
+        { value: 'dark', label: t('settings.theme.dark'), glyph: 'moon' },
       ],
       (theme) => {
         ctx.store.update((d) => {
@@ -65,12 +66,18 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
     el(
       'div',
       { attrs: { style: 'margin-top:8px' } },
-      switchRow(t('settings.hijri'), t('home.hijriNote'), settings.showHijri, (next) => {
-        ctx.store.update((d) => {
-          d.showHijri = next;
-        });
-        ctx.refresh();
-      }),
+      switchRow(
+        t('settings.hijri'),
+        t('home.hijriNote'),
+        settings.showHijri,
+        (next) => {
+          ctx.store.update((d) => {
+            d.showHijri = next;
+          });
+          ctx.refresh();
+        },
+        'moon',
+      ),
     ),
   );
 
@@ -140,6 +147,9 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
       ? `${loc.cityName} — ${countryName(loc.countryCode, ctx.intl)}`
       : countryName(loc.countryCode, ctx.intl) || t('loc.current')
     : t('common.none');
+  const locationSubtitle = loc
+    ? `${loc.timeZone} · ${t(`loc.source.${loc.source}` as MessageKey)}`
+    : t('loc.autoTz');
   locationCard.append(
     el('div', { class: 'card-head' }, el('h2', { text: t('settings.locationSection') })),
     el(
@@ -150,11 +160,7 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
         'span',
         { class: 'grow' },
         el('strong', { text: placeText }),
-        el('span', {
-          text: loc
-            ? `${loc.timeZone} · ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)} · ${t(`loc.source.${loc.source}` as MessageKey)}`
-            : t('loc.autoTz'),
-        }),
+        el('span', { text: locationSubtitle }),
       ),
       el(
         'button',
@@ -167,6 +173,36 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
       ),
     ),
     el('p', { class: 'tiny muted', attrs: { style: 'margin-top:8px' }, text: t('loc.autoTz') }),
+  );
+
+  // ---------------------------------------------------------------- calculation method
+  const methodCard = el('div', { class: 'card' });
+  const method = getMethod(settings.calculation.methodId);
+  methodCard.append(
+    el('div', { class: 'card-head' }, el('h2', { text: t('methods.title') })),
+    el(
+      'div',
+      { class: 'row' },
+      el('span', { class: 'prayer-icon' }, icon('sliders', 18)),
+      el(
+        'span',
+        { class: 'grow' },
+        el('strong', { text: method.name[ctx.locale] }),
+        el('span', {
+          class: 'tiny muted',
+          text: `${t('methods.asr')}: ${settings.calculation.asrSchool === 'hanafi' ? t('methods.asr.hanafiShort') : t('methods.asr.standardShort')}`,
+        }),
+      ),
+      el(
+        'button',
+        {
+          class: 'btn sm',
+          attrs: { type: 'button' },
+          on: { click: () => ctx.navigate('methods') },
+        },
+        t('loc.change'),
+      ),
+    ),
   );
 
   // ---------------------------------------------------------------- notifications
@@ -217,18 +253,53 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
             },
             t('diag.grant'),
           )
-        : el(
-            'button',
-            { class: 'btn sm ghost', attrs: { type: 'button' }, on: { click: () => ctx.navigate('diagnostics') } },
-            t('settings.diagnostics'),
-          ),
+        : null,
     ),
-    switchRow(t('settings.notifications'), null, settings.notificationsWanted, (next) => {
-      ctx.store.update((d) => {
-        d.notificationsWanted = next;
-      });
-      ctx.refresh();
-    }),
+    switchRow(
+      t('settings.notifications'),
+      null,
+      settings.notificationsWanted,
+      (next) => {
+        ctx.store.update((d) => {
+          d.notificationsWanted = next;
+        });
+        ctx.refresh();
+      },
+      'bell',
+    ),
+    el(
+      'div',
+      { class: 'row-between align-center', attrs: { style: 'padding-top:10px;border-top:1px solid var(--border);' } },
+      el(
+        'div',
+        { class: 'grow stack xs', attrs: { style: 'min-width:0;padding-inline-end:var(--space-2);' } },
+        el(
+          'strong',
+          { class: 'small row align-center gap-xs' },
+          icon('mosque', 17),
+          el('span', { text: t('settings.mosqueMode') }),
+        ),
+        el('div', { class: 'tiny muted', text: t('settings.mosqueModeDesc') }),
+      ),
+      segmented<string>(
+        String(settings.mosqueModeMinutes ?? 0),
+        [
+          { value: '0', label: t('settings.mosqueModeOff') },
+          { value: '15', label: `15 ${t('common.min')}` },
+          { value: '20', label: `20 ${t('common.min')}` },
+          { value: '30', label: `30 ${t('common.min')}` },
+        ],
+        (val) => {
+          const mins = parseInt(val, 10);
+          ctx.store.update((d) => {
+            d.mosqueModeMinutes = mins;
+          });
+          nativeBridge()?.setMosqueMode?.(mins);
+          toast(mins > 0 ? t('settings.mosqueModeEnabled') : t('settings.mosqueModeDisabled'));
+          ctx.refresh();
+        },
+      ),
+    ),
   );
 
   // ---------------------------------------------------------------- data
@@ -345,7 +416,7 @@ export function settingsScreen(ctx: AppContext): HTMLElement {
     el('p', { class: 'tiny muted', attrs: { style: 'margin-top:12px' }, text: `${t('settings.version')} ${APP_VERSION}` }),
   );
 
-  root.append(appearance, fastingCard, locationCard, notifCard, dataCard, dangerCard, privacy);
+  root.append(appearance, fastingCard, locationCard, methodCard, notifCard, dataCard, dangerCard, privacy);
   return root;
 }
 

@@ -80,13 +80,13 @@ const ZONES = new Set(['Africa/Casablanca', 'Africa/El_Aaiun']);
 
 describe('filtered catalogue shape', () => {
   it('keeps every Moroccan locality and the world top cities', () => {
-    expect(morocco.length).toBe(46_041);
-    expect(world.length).toBe(1_694);
-    expect(full.cities.length).toBe(47_735);
-    expect(full.countryCodes.length).toBe(243);
-    expect(CITY_STATS.morocco).toBe(46_041);
-    expect(CITY_STATS.total).toBe(47_735);
-    expect(CITY_STATS.countries).toBe(243);
+    expect(morocco.length).toBe(46_039);
+    expect(world.length).toBe(2_566);
+    expect(full.cities.length).toBe(48_605);
+    expect(full.countryCodes.length).toBe(244);
+    expect(CITY_STATS.morocco).toBe(46_039);
+    expect(CITY_STATS.total).toBe(48_605);
+    expect(CITY_STATS.countries).toBe(244);
   });
 
   it('exposes the GeoNames attribution', () => {
@@ -177,23 +177,23 @@ describe('filtered catalogue shape', () => {
 
 describe('bundle split', () => {
   it('bundles only the core: world cities plus the 300 largest Moroccan ones', () => {
-    expect(CORE_CITIES.length).toBe(1_996);
-    expect(CORE_CITIES.filter((city) => city.cc === 'MA')).toHaveLength(302);
-    expect(CORE_CITIES.filter((city) => city.cc !== 'MA')).toHaveLength(1_694);
-    expect(CITY_STATS.bundled).toBe(1_996);
-    expect(CITY_STATS.bundledMorocco).toBe(302);
+    expect(CORE_CITIES.length).toBe(2_866);
+    expect(CORE_CITIES.filter((city) => city.cc === 'MA')).toHaveLength(300);
+    expect(CORE_CITIES.filter((city) => city.cc !== 'MA')).toHaveLength(2_566);
+    expect(CITY_STATS.bundled).toBe(2_866);
+    expect(CITY_STATS.bundledMorocco).toBe(300);
   });
 
   it('keeps the core small enough for the initial JavaScript', () => {
     const bytes = readFileSync(join(ROOT, 'src', 'core', 'data', 'cities-core.json')).byteLength;
-    expect(bytes).toBeLessThan(400 * 1024);
+    expect(bytes).toBeLessThan(600 * 1024);
     expect(bytes).toBeGreaterThan(100 * 1024);
   });
 
   it('publishes the index at the URL the app fetches', () => {
     expect(CITY_INDEX_URL).toBe('/data/cities/index.json');
-    expect(index.total).toBe(46_041);
-    expect(index.cities).toHaveLength(46_041);
+    expect(index.total).toBe(46_039);
+    expect(index.cities).toHaveLength(46_039);
   });
 
   it('splits Morocco into one file per region, without gaps or duplicates', () => {
@@ -216,7 +216,7 @@ describe('bundle split', () => {
     const missing = morocco.filter((city) => !seen.has(city.id)).map((city) => city.name);
     expect(mismatchedCounts).toEqual([]);
     expect(duplicates).toEqual([]);
-    expect(total).toBe(46_041);
+    expect(total).toBe(46_039);
     expect(missing).toEqual([]);
   });
 
@@ -291,6 +291,15 @@ describe('offline search', () => {
   it('finds Fes and Casablanca from Arabic', () => {
     expect(searchAll('فاس', 5, 'MA')[0]?.name).toBe('Fes');
     expect(searchAll('الدار البيضاء', 5, 'MA')[0]?.name).toBe('Casablanca');
+  });
+
+  it('finds international cities from Arabic search', () => {
+    expect(searchAll('باريس', 5)[0]?.name).toBe('Paris');
+    expect(searchAll('الجزائر', 5)[0]?.name).toBe('Algiers');
+    expect(searchAll('تونس', 5)[0]?.name).toBe('Tunis');
+    expect(searchAll('مكة', 5)[0]?.name).toBe('Makkah');
+    expect(searchAll('مدريد', 5)[0]?.name).toBe('Madrid');
+    expect(searchAll('بروكسل', 5)[0]?.name).toBe('Brussels');
   });
 
   it('matches alternate spellings', () => {

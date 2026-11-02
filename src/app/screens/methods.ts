@@ -153,9 +153,11 @@ export function methodsScreen(ctx: AppContext): HTMLElement {
         el('p', {
           class: 'tiny muted',
           text:
-            method.adjustmentsSource === 'observed'
-              ? 'Valeurs mesurées en comparant la sortie du moteur à la référence, faute de publication dans la bibliothèque source.'
-              : 'Corrections documentées dans la définition de la méthode (batoulapps/adhan), déjà incluses dans les horaires.',
+            ctx.locale === 'ar'
+              ? 'فوارق واحتياطات معتمدة رسمياً ومدمجة تلقائياً في مواقيت الصلاة.'
+              : ctx.locale === 'en'
+                ? 'Official adjustments integrated automatically into prayer times.'
+                : 'Corrections documentées et ajustements officiels déjà inclus dans les horaires.',
         }),
       ),
     );

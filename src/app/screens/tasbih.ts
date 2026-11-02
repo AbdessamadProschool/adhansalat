@@ -16,7 +16,14 @@ import type { AppContext } from '../context.js';
 import type { ActiveSession, Dhikr, SessionTemplate } from '../tasbih.js';
 import { tasbihStore } from '../tasbih.js';
 import { confirmDialog, el, icon, segmented, switchRow, toast } from '../ui.js';
+import { SpiritualHubWidget } from '../spiritual-hub.js';
+import { computeTodaySpiritualProgress } from '../spiritual-tree.js';
 import { ADHKAR_LIST, type AdhkarCategory, type AdhkarItem } from '../../core/adhkar.js';
+import {
+  AYAT_FADILA_ITEMS,
+  searchAyatFadila,
+  type AyatFadilaSection,
+} from '../../core/ayat-fadila.js';
 import { hijriDate } from '../../core/hijri.js';
 import {
   loadKhatmahState,
@@ -63,20 +70,19 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   const dhikrLabel = (dhikr: Dhikr | undefined, fallback = '—'): string =>
     ctx.locale === 'ar' && dhikr?.arabic ? dhikr.arabic : rawDhikrLabel(dhikr, fallback);
 
-  const vibrate = (): void => {
+  const vibrate = (isTarget = false): void => {
     if (!store.get().vibration) return;
     const api = vibrationApi();
-    if (!api) {
-      toast(t('tasbih.vibrationUnsupported'));
-      return;
-    }
-    let accepted = false;
+    if (!api) return;
     try {
-      accepted = api(12);
+      if (isTarget) {
+        api([70, 50, 70, 50, 100]);
+      } else {
+        api(24);
+      }
     } catch {
-      accepted = false;
+      /* ignore */
     }
-    if (!accepted) toast(t('tasbih.vibrationUnsupported'));
   };
 
   // ---------------------------------------------------------------- header
@@ -91,11 +97,11 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   );
 
   // ---------------------------------------------------------------- panels
-  const counterPanel = el('div', { class: 'stack', attrs: { role: 'region', 'aria-label': t('tasbih.counter') } });
-  const adhkarPanel = el('div', { class: 'stack', attrs: { role: 'region', 'aria-label': t('adhkar.title') } });
-  const khatmahPanel = el('div', { class: 'stack', attrs: { role: 'region', 'aria-label': t('khatmah.title') } });
-  const sessionsPanel = el('div', { class: 'stack', attrs: { role: 'region', 'aria-label': t('tasbih.sessions') } });
-  const historyPanel = el('div', { class: 'stack', attrs: { role: 'region', 'aria-label': t('tasbih.history') } });
+  const counterPanel = el('div', { class: 'tab-panel stack', attrs: { role: 'region', 'aria-label': t('tasbih.counter') } });
+  const adhkarPanel = el('div', { class: 'tab-panel stack', attrs: { role: 'region', 'aria-label': t('adhkar.title') } });
+  const khatmahPanel = el('div', { class: 'tab-panel stack', attrs: { role: 'region', 'aria-label': t('khatmah.title') } });
+  const sessionsPanel = el('div', { class: 'tab-panel stack', attrs: { role: 'region', 'aria-label': t('tasbih.sessions') } });
+  const historyPanel = el('div', { class: 'tab-panel stack', attrs: { role: 'region', 'aria-label': t('tasbih.history') } });
   adhkarPanel.hidden = true;
   khatmahPanel.hidden = true;
   sessionsPanel.hidden = true;
@@ -104,11 +110,11 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   const tabs = segmented<'counter' | 'adhkar' | 'khatmah' | 'sessions' | 'history'>(
     'counter',
     [
-      { value: 'counter', label: t('tasbih.counter') },
-      { value: 'adhkar', label: t('adhkar.title') },
-      { value: 'khatmah', label: t('khatmah.title') },
-      { value: 'sessions', label: t('tasbih.sessions') },
-      { value: 'history', label: t('tasbih.history') },
+      { value: 'counter', label: t('tasbih.counter'), glyph: 'beads' },
+      { value: 'adhkar', label: t('adhkar.title'), glyph: 'book' },
+      { value: 'khatmah', label: t('khatmah.title'), glyph: 'quran' },
+      { value: 'sessions', label: t('tasbih.sessions'), glyph: 'clock' },
+      { value: 'history', label: t('tasbih.history'), glyph: 'calendar' },
     ],
     (value) => {
       counterPanel.hidden = value !== 'counter';
@@ -142,6 +148,7 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
     },
   });
 
+  const spiritualHub = new SpiritualHubWidget(computeTodaySpiritualProgress(ctx.store));
   const countValue = el('span', { class: 'tasbih-count', attrs: { 'aria-hidden': 'true' } });
   const targetValue = el('span', { class: 'tasbih-target', attrs: { 'aria-hidden': 'true' } });
   const progressFill = el('span', { class: 'tasbih-progress-fill', attrs: { 'aria-hidden': 'true' } });
@@ -152,22 +159,64 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   );
   const live = el('p', { class: 'sr-only', attrs: { role: 'status', 'aria-live': 'polite' } });
 
+  function handleTasbihTap(e?: MouseEvent): void {
+    tapButton.classList.remove('has-ripple');
+    void tapButton.offsetWidth; // force reflow for animation restart
+    tapButton.classList.add('has-ripple');
+    const result = store.increment();
+    vibrate(result.reached);
+
+    // Calculate relative coordinates if tapped directly
+    let touchX: number | undefined;
+    let touchY: number | undefined;
+    if (e && e.clientX && e.clientY) {
+      const hubRect = spiritualHub.getElement().getBoundingClientRect();
+      touchX = e.clientX - hubRect.left;
+      touchY = e.clientY - hubRect.top;
+    }
+
+    const currentDhikr = store.findDhikr(store.get().dhikrId);
+    const dhikrFirstWord = currentDhikr?.arabic?.split(' ')[0] ?? '+1';
+
+    spiritualHub.pulseTapFeedback(touchX, touchY, dhikrFirstWord);
+    const treeProg = computeTodaySpiritualProgress(ctx.store);
+    treeProg.dhikrCount = Math.max(treeProg.dhikrCount, result.count);
+    spiritualHub.update(treeProg, result.count, store.goalOf(store.get().dhikrId) ?? 33);
+
+    if (result.reached) {
+      toast(t('tasbih.reached', { count: result.count }));
+      const valContainer = tapButton.querySelector<HTMLElement>('.tasbih-value');
+      if (valContainer) {
+        valContainer.classList.remove('is-milestone');
+        void valContainer.offsetWidth;
+        valContainer.classList.add('is-milestone');
+      }
+    }
+    paintCounter();
+  }
+
+  // Connect stage tap so clicking anywhere on the visual tree or dial directly counts
+  spiritualHub.onStageTap((e) => handleTasbihTap(e));
+
+  const handIndicator = el(
+    'div',
+    { class: 'tasbih-hand-indicator', attrs: { 'aria-hidden': 'true' } },
+    el('span', { class: 'tasbih-hand-icon' }, '👆'),
+    el('span', { class: 'tasbih-hand-text', text: t('tasbih.tapToCount') }),
+  );
+
   const tapButton = el(
     'button',
     {
-      class: 'tasbih-tap',
+      class: 'tasbih-tap sanctuary-tap',
       attrs: { type: 'button' },
       on: {
-        click: () => {
-          const result = store.increment();
-          vibrate();
-          if (result.reached) toast(t('tasbih.reached', { count: result.count }));
-          paintCounter();
-        },
+        click: (ev: Event) => handleTasbihTap(ev instanceof MouseEvent ? ev : undefined),
       },
     },
     el('span', { class: 'tasbih-value' }, countValue, targetValue),
     progress,
+    handIndicator,
   );
 
   const undoBtn = el('button', {
@@ -244,50 +293,67 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
           toast(next ? t('tasbih.vibrationOn') : t('tasbih.vibrationOff'));
           if (next) vibrate();
         },
+        'vibrate',
       ),
     );
   }
 
   counterPanel.append(
-    el('div', { class: 'card' }, chips),
+    el('div', { class: 'card compact' }, chips),
     el(
       'div',
       { class: 'card tasbih-stage' },
+      // 1. Unified Header (Image 1: Arabic text + metadata on start side; Goal chips + favorite + delete on end side)
       el(
         'div',
-        { class: 'tasbih-head' },
+        { class: 'tasbih-head-unified' },
         el(
           'div',
-          { class: 'grow' },
+          { class: 'tasbih-dhikr-meta' },
           arabicEl,
-          translitEl,
-          translationEl,
-          referenceEl,
+          el('div', { class: 'tasbih-meta-sub' }, translitEl, translationEl, referenceEl),
         ),
-        el('div', { class: 'tasbih-head-actions' }, favoriteBtn, deleteBtn),
+        el(
+          'div',
+          { class: 'tasbih-head-controls' },
+          goalSlot,
+          el('div', { class: 'row align-center gap-xs' }, favoriteBtn, deleteBtn),
+        ),
       ),
-      tapButton,
-      live,
-      el('p', { class: 'tiny muted center', text: t('tasbih.tapHint') }),
-      el('div', { class: 'btn-row center' }, undoBtn, resetBtn),
-    ),
-    el(
-      'div',
-      { class: 'card stack sm' },
-      el('h2', { class: 'h3', text: t('tasbih.goal') }),
-      goalSlot,
+      // 2. Dual Sanctuary Stage (Image 2: Side-by-side Spiritual Tree & Mihrab + Sacred Counter & Tap Button)
       el(
-        'button',
-        {
-          class: 'btn ghost sm',
-          attrs: { type: 'button' },
-          on: { click: () => openCustomDhikrSheet() },
-        },
-        icon('plus', 16),
-        t('tasbih.customAdd'),
+        'div',
+        { class: 'tasbih-sanctuary-stage' },
+        el(
+          'div',
+          { class: 'tasbih-stage-visual' },
+          spiritualHub.getElement(),
+        ),
+        el(
+          'div',
+          { class: 'tasbih-stage-action' },
+          tapButton,
+          live,
+          el('div', { class: 'btn-row center tasbih-stage-footer-actions' }, undoBtn, resetBtn),
+        ),
+      ),
+      // 3. Compact Bottom Control Bar
+      el(
+        'div',
+        { class: 'row-between align-center tasbih-bottom-bar' },
+        el(
+          'button',
+          {
+            class: 'btn ghost xs',
+            attrs: { type: 'button' },
+            on: { click: () => openCustomDhikrSheet() },
+          },
+          icon('plusCircle', 16),
+          el('span', { text: ` ${t('tasbih.customAdd')}` }),
+        ),
+        vibrationSlot,
       ),
     ),
-    el('div', { class: 'card stack sm' }, el('h2', { class: 'h3', text: t('tasbih.vibration') }), vibrationSlot),
   );
 
   let paintedGoalFor = '';
@@ -377,6 +443,11 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
     const ratio = goal && goal > 0 ? Math.min(1, count / goal) : 0;
     progressFill.style.width = `${Math.round(ratio * 100)}%`;
     progress.hidden = goal === null;
+
+    const treeProg = computeTodaySpiritualProgress(ctx.store);
+    treeProg.dhikrCount = Math.max(treeProg.dhikrCount, count);
+    spiritualHub.setGoal(goal ?? 33);
+    spiritualHub.update(treeProg, count, goal ?? 33);
     const label = t('tasbih.countLabel', { dhikr: dhikrLabel(dhikr) });
     const progressText = t('tasbih.count', {
       count,
@@ -397,10 +468,22 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
     deleteBtn.hidden = Boolean(dhikr?.builtin);
     undoBtn.disabled = !store.canUndo();
     resetBtn.disabled = count === 0;
-    undoBtn.textContent = t('tasbih.undo');
-    resetBtn.textContent = t('tasbih.reset');
+    undoBtn.replaceChildren(
+      icon('undo', 15),
+      el('span', { text: ` ${t('tasbih.undo')}` }),
+    );
+    resetBtn.replaceChildren(
+      icon('reset', 15),
+      el('span', { text: ` ${t('tasbih.reset')}` }),
+    );
 
     if (paintedGoalFor !== id) paintGoals();
+
+    if (goal && goal > 0) {
+      spiritualHub.setGoal(goal);
+    }
+    const currentProg = computeTodaySpiritualProgress(ctx.store);
+    spiritualHub.update(currentProg, count, goal ?? 33);
 
     for (const chip of Array.from(chips.children)) {
       chip.setAttribute(
@@ -850,22 +933,466 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   let adhkarCategory: AdhkarCategory = 'morning';
   const adhkarCounts: Record<string, number> = {};
 
-  // Initialize saved counts from sessionStorage if available
+  // Ayat wa Suwar Al-Fadila state
+  let ayatFadilaSubTab: 'all' | AyatFadilaSection = 'all';
+  let ayatFadilaSearchQuery = '';
+  const ayatFadilaExpanded = new Set<string>();
+  let ayatFadilaFontSize: 'sm' | 'md' | 'lg' = 'md';
+  let ayatFadilaFontStyle: 'standard' | 'mushaf' = 'standard';
+
+  // Initialize saved counts from localStorage or sessionStorage
   try {
-    const saved = sessionStorage.getItem('azan.adhkar_counts');
+    const saved =
+      localStorage.getItem('azan.adhkar_counts_v1') ||
+      sessionStorage.getItem('azan.adhkar_counts');
     if (saved) {
       Object.assign(adhkarCounts, JSON.parse(saved));
     }
   } catch {
-    // sessionStorage disabled or unavailable
+    // storage disabled or unavailable
   }
 
   function saveAdhkarCounts(): void {
     try {
+      localStorage.setItem('azan.adhkar_counts_v1', JSON.stringify(adhkarCounts));
       sessionStorage.setItem('azan.adhkar_counts', JSON.stringify(adhkarCounts));
     } catch {
       // ignore
     }
+  }
+
+  let activeSpeechItem: string | null = null;
+  function toggleSpeech(itemId: string, text: string, onUpdate: () => void): void {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      toast(t('adhan.unsupportedFormat'));
+      return;
+    }
+    if (window.speechSynthesis.speaking && activeSpeechItem === itemId) {
+      window.speechSynthesis.cancel();
+      activeSpeechItem = null;
+      onUpdate();
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ar-SA';
+    utterance.rate = 0.88;
+    utterance.pitch = 1.0;
+    activeSpeechItem = itemId;
+    onUpdate();
+    utterance.onend = () => {
+      activeSpeechItem = null;
+      onUpdate();
+    };
+    utterance.onerror = () => {
+      activeSpeechItem = null;
+      onUpdate();
+    };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function paintAyatFadila(container: HTMLElement, categoryTabs: HTMLElement): void {
+    const completedTotal = AYAT_FADILA_ITEMS.filter(
+      (item) => (adhkarCounts[item.id] || 0) >= item.count,
+    ).length;
+    const percentTotal = Math.round((completedTotal / AYAT_FADILA_ITEMS.length) * 100);
+
+    const subTabs = segmented<'all' | AyatFadilaSection>(
+      ayatFadilaSubTab,
+      [
+        { value: 'all', label: t('ayatFadila.all') },
+        { value: 'verses', label: t('ayatFadila.verses') },
+        { value: 'surahs', label: t('ayatFadila.surahs') },
+        { value: 'qisar', label: t('ayatFadila.qisar') },
+      ],
+      (val) => {
+        ayatFadilaSubTab = val;
+        paintAdhkar();
+      },
+    );
+
+    let clearBtn: HTMLElement | null = null;
+    const searchInput = el('input', {
+      class: 'ayat-fadila-search-input',
+      attrs: {
+        type: 'text',
+        placeholder: t('ayatFadila.searchPlaceholder'),
+        value: ayatFadilaSearchQuery,
+        'aria-label': t('ayatFadila.searchPlaceholder'),
+      },
+      on: {
+        input: (e) => {
+          ayatFadilaSearchQuery = (e.target as HTMLInputElement).value;
+          if (clearBtn) {
+            clearBtn.style.display = ayatFadilaSearchQuery ? 'block' : 'none';
+          }
+          renderListOnly();
+        },
+      },
+    }) as HTMLInputElement;
+
+    clearBtn = el(
+      'button',
+      {
+        class: 'ayat-fadila-clear-btn',
+        attrs: {
+          type: 'button',
+          'aria-label': 'Clear search',
+          style: ayatFadilaSearchQuery ? 'display: block;' : 'display: none;',
+        },
+        on: {
+          click: () => {
+            ayatFadilaSearchQuery = '';
+            searchInput.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            renderListOnly();
+          },
+        },
+      },
+      icon('close', 14),
+    );
+
+    const searchWrapper = el(
+      'div',
+      { class: 'ayat-fadila-search-wrapper' },
+      searchInput,
+      clearBtn,
+      el('span', { class: 'ayat-fadila-search-icon' }, icon('search', 15)),
+    );
+
+    // Font controls: A- / A / A+
+    const fontBtnSm = el(
+      'button',
+      {
+        class: `quran-font-btn ${ayatFadilaFontSize === 'sm' ? 'active' : ''}`,
+        attrs: { type: 'button', title: 'صغير' },
+        on: {
+          click: () => {
+            ayatFadilaFontSize = 'sm';
+            paintAdhkar();
+          },
+        },
+      },
+      'A-',
+    );
+    const fontBtnMd = el(
+      'button',
+      {
+        class: `quran-font-btn ${ayatFadilaFontSize === 'md' ? 'active' : ''}`,
+        attrs: { type: 'button', title: 'متوسط' },
+        on: {
+          click: () => {
+            ayatFadilaFontSize = 'md';
+            paintAdhkar();
+          },
+        },
+      },
+      'A',
+    );
+    const fontBtnLg = el(
+      'button',
+      {
+        class: `quran-font-btn ${ayatFadilaFontSize === 'lg' ? 'active' : ''}`,
+        attrs: { type: 'button', title: 'كبير' },
+        on: {
+          click: () => {
+            ayatFadilaFontSize = 'lg';
+            paintAdhkar();
+          },
+        },
+      },
+      'A+',
+    );
+
+    // Font style switch: Standard (Tajawal) vs Mushaf (Naskh)
+    const styleBtnStandard = el(
+      'button',
+      {
+        class: `quran-font-btn ${ayatFadilaFontStyle === 'standard' ? 'active' : ''}`,
+        attrs: { type: 'button' },
+        on: {
+          click: () => {
+            ayatFadilaFontStyle = 'standard';
+            paintAdhkar();
+          },
+        },
+      },
+      t('ayatFadila.fontStandard'),
+    );
+    const styleBtnMushaf = el(
+      'button',
+      {
+        class: `quran-font-btn ${ayatFadilaFontStyle === 'mushaf' ? 'active' : ''}`,
+        attrs: { type: 'button' },
+        on: {
+          click: () => {
+            ayatFadilaFontStyle = 'mushaf';
+            paintAdhkar();
+          },
+        },
+      },
+      t('ayatFadila.fontMushaf'),
+    );
+    const styleControls = el(
+      'div',
+      { class: 'quran-font-controls' },
+      styleBtnStandard,
+      styleBtnMushaf,
+    );
+
+    const toolbar = el(
+      'div',
+      { class: 'ayat-fadila-toolbar' },
+      searchWrapper,
+      styleControls,
+      el('div', { class: 'quran-font-controls' }, fontBtnSm, fontBtnMd, fontBtnLg),
+    );
+
+    const headerBox = el(
+      'div',
+      { class: 'ayat-fadila-header-box' },
+      el(
+        'div',
+        { class: 'adhkar-progress-box' },
+        el(
+          'div',
+          { class: 'adhkar-progress-label' },
+          el('span', {
+            text:
+              ctx.locale === 'ar'
+                ? 'مجموع تلاوة الآيات والسور الفاضلة'
+                : 'Progression globale des versets et sourates',
+          }),
+          el('strong', {
+            text: `${completedTotal} / ${AYAT_FADILA_ITEMS.length} (${percentTotal}%)`,
+          }),
+        ),
+        el(
+          'div',
+          { class: 'adhkar-progress-track', attrs: { 'aria-hidden': 'true' } },
+          el('span', {
+            class: 'adhkar-progress-fill',
+            attrs: { style: `width: ${percentTotal}%;` },
+          }),
+        ),
+      ),
+      subTabs,
+      toolbar,
+    );
+
+    const itemsContainer = el('div', {
+      class: 'stack sm',
+      attrs: { id: 'ayat-fadila-items-list' },
+    });
+
+    function buildQuranParagraph(arabicText: string, fontSizeClass: string): HTMLElement {
+      const wrapper = el('div', {
+        class: `quran-reading-view font-${fontSizeClass} ${ayatFadilaFontStyle === 'mushaf' ? 'font-mushaf' : ''}`,
+        attrs: { lang: 'ar', dir: 'rtl' },
+      });
+
+      const bismillahStandard = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝';
+      let bodyText = arabicText;
+      if (arabicText.startsWith(bismillahStandard)) {
+        wrapper.appendChild(
+          el('div', {
+            class: 'quran-bismillah',
+            text: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+          }),
+        );
+        bodyText = arabicText.slice(bismillahStandard.length).trim();
+      }
+
+      const parts = bodyText.split('۝');
+      for (const rawPart of parts) {
+        const part = (rawPart || '').trim();
+        if (part) {
+          wrapper.appendChild(document.createTextNode(part + ' '));
+          wrapper.appendChild(el('span', { class: 'quran-ayah-mark', text: '۝' }));
+          wrapper.appendChild(document.createTextNode(' '));
+        }
+      }
+
+      return wrapper;
+    }
+
+    function renderListOnly(): void {
+      itemsContainer.replaceChildren();
+      const currentList = searchAyatFadila(
+        ayatFadilaSearchQuery,
+        ayatFadilaSubTab === 'all' ? undefined : ayatFadilaSubTab,
+      );
+
+      if (currentList.length === 0) {
+        itemsContainer.appendChild(
+          el(
+            'div',
+            {
+              class: 'card tight center muted stack xs',
+              attrs: { style: 'padding: var(--space-4); text-align: center;' },
+            },
+            el('p', { class: 'small', text: t('ayatFadila.emptySearch') }),
+          ),
+        );
+        return;
+      }
+
+      for (const item of currentList) {
+        const current = adhkarCounts[item.id] || 0;
+        const isDone = current >= item.count;
+        const isLongSurah = item.section === 'surahs';
+        const isExpanded = ayatFadilaExpanded.has(item.id);
+
+        const title =
+          ctx.locale === 'ar' ? item.titleAr : ctx.locale === 'en' ? item.titleEn : item.titleFr;
+        const virtue =
+          ctx.locale === 'ar' ? item.virtueAr : ctx.locale === 'en' ? item.virtueEn : item.virtueFr;
+
+        const surahBadge = el('span', {
+          class: 'surah-meta-pill',
+          text:
+            ctx.locale === 'ar'
+              ? `سورة ${item.surahNameAr} (${item.ayahRange} آية)`
+              : `${item.surahNameFr} (${item.ayahRange})`,
+        });
+
+        const countBadge = el('span', {
+          class: `pill ${isDone ? 'ok' : 'muted'}`,
+          text: `${current} / ${item.count}`,
+        });
+
+        let expandBtn: HTMLElement | null = null;
+        if (isLongSurah) {
+          expandBtn = el(
+            'button',
+            {
+              class: `btn ${isExpanded ? 'ghost' : 'primary'} sm`,
+              attrs: { type: 'button' },
+              on: {
+                click: (e) => {
+                  e.stopPropagation();
+                  if (ayatFadilaExpanded.has(item.id)) {
+                    ayatFadilaExpanded.delete(item.id);
+                  } else {
+                    ayatFadilaExpanded.add(item.id);
+                  }
+                  renderListOnly();
+                },
+              },
+            },
+            icon(isExpanded ? 'chevron' : 'book', 15),
+            isExpanded ? t('ayatFadila.collapse') : t('ayatFadila.readFull'),
+          );
+        }
+
+        const tapBtn = el(
+          'button',
+          {
+            class: `btn ${isDone ? 'ghost' : 'primary'} sm`,
+            attrs: {
+              type: 'button',
+              'aria-label': `${title} — ${current}/${item.count}`,
+            },
+            on: {
+              click: (e) => {
+                e.stopPropagation();
+                const willComplete = current + 1 >= item.count;
+                vibrate(willComplete);
+                if (current < item.count) {
+                  adhkarCounts[item.id] = current + 1;
+                } else {
+                  adhkarCounts[item.id] = 0;
+                }
+                saveAdhkarCounts();
+                const treeProg = computeTodaySpiritualProgress(ctx.store);
+                spiritualHub.update(treeProg);
+                paintAdhkar();
+              },
+            },
+          },
+          isDone ? icon('check', 16) : null,
+          isDone
+            ? t('adhkar.completed')
+            : item.count > 1
+              ? `👆 ${t('adhkar.tapToCount')} (${current}/${item.count})`
+              : `✓ ${ctx.locale === 'ar' ? 'تمت القراءة' : 'Marquer comme lu'}`,
+        );
+
+        const isSpeaking = activeSpeechItem === item.id;
+        const listenBtn = el(
+          'button',
+          {
+            class: `btn sm ${isSpeaking ? 'primary' : 'ghost'}`,
+            attrs: {
+              type: 'button',
+              'aria-label': `${t('adhkar.listen')} — ${title}`,
+            },
+            on: {
+              click: (e) => {
+                e.stopPropagation();
+                toggleSpeech(item.id, item.arabic, () => renderListOnly());
+              },
+            },
+          },
+          icon(isSpeaking ? 'speakerMute' : 'speaker', 15),
+          isSpeaking ? t('adhan.stop') : t('adhkar.listen'),
+        );
+
+        let textElement: HTMLElement;
+        if (isLongSurah && !isExpanded) {
+          const previewText = item.arabic.slice(0, 130) + '...';
+          textElement = el('p', {
+            class: `adhkar-arabic font-${ayatFadilaFontSize} ${ayatFadilaFontStyle === 'mushaf' ? 'font-mushaf' : ''}`,
+            attrs: { lang: 'ar', dir: 'rtl', style: 'opacity: 0.85;' },
+            text: previewText,
+          });
+        } else {
+          textElement = buildQuranParagraph(item.arabic, ayatFadilaFontSize);
+        }
+
+        const card = el(
+          'article',
+          {
+            class: `card tight stack xs adhkar-card ${isDone ? 'is-completed' : ''}`,
+          },
+          el(
+            'div',
+            { class: 'row-between align-center' },
+            el(
+              'div',
+              { class: 'row align-center', attrs: { style: 'gap: 8px;' } },
+              surahBadge,
+              el('strong', { class: 'small', text: title }),
+            ),
+            countBadge,
+          ),
+          textElement,
+          virtue
+            ? el('p', { class: 'tiny muted virtue-note', text: `💡 ${virtue}` })
+            : null,
+          el(
+            'div',
+            {
+              class: 'row-between align-center',
+              attrs: { style: 'margin-top: var(--space-2); flex-wrap: wrap; gap: 8px;' },
+            },
+            el('span', { class: 'tiny muted', text: item.reference }),
+            el(
+              'div',
+              { class: 'btn-row align-center', attrs: { style: 'gap: 6px; flex-wrap: wrap;' } },
+              expandBtn,
+              listenBtn,
+              tapBtn,
+            ),
+          ),
+        );
+
+        itemsContainer.appendChild(card);
+      }
+    }
+
+    renderListOnly();
+    container.append(categoryTabs, headerBox, itemsContainer);
   }
 
   function paintAdhkar(): void {
@@ -874,11 +1401,13 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
     const categoryTabs = segmented<AdhkarCategory>(
       adhkarCategory,
       [
-        { value: 'morning', label: t('adhkar.morning') },
-        { value: 'evening', label: t('adhkar.evening') },
-        { value: 'after-prayer', label: t('adhkar.afterPrayer') },
-        { value: 'ramadan', label: t('adhkar.ramadan') },
-        { value: 'essential', label: t('adhkar.essential') },
+        { value: 'morning', label: t('adhkar.morning'), glyph: 'sunrise' },
+        { value: 'evening', label: t('adhkar.evening'), glyph: 'maghrib' },
+        { value: 'ayat-fadila', label: t('adhkar.ayatFadila'), glyph: 'quran' },
+        { value: 'after-prayer', label: t('adhkar.afterPrayer'), glyph: 'kaaba' },
+        { value: 'sleep', label: t('adhkar.sleep'), glyph: 'moon' },
+        { value: 'ramadan', label: t('adhkar.ramadan'), glyph: 'isha' },
+        { value: 'essential', label: t('adhkar.essential'), glyph: 'shield' },
       ],
       (cat) => {
         adhkarCategory = cat;
@@ -886,15 +1415,50 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
       },
     );
 
-    const items = ADHKAR_LIST.filter((item) => item.category === adhkarCategory);
-    const listContainer = el('div', { class: 'stack sm' });
+    if (adhkarCategory === 'ayat-fadila') {
+      paintAyatFadila(adhkarPanel, categoryTabs);
+      return;
+    }
 
-    let completedCount = 0;
+    const items = ADHKAR_LIST.filter((item) => item.category === adhkarCategory);
+    const completedCount = items.filter((item) => (adhkarCounts[item.id] || 0) >= item.count).length;
+    const percent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+
+    const guideBox = el(
+      'div',
+      { class: 'adhkar-guide-box' },
+      el(
+        'div',
+        { class: 'adhkar-guide-steps' },
+        el('div', { class: 'adhkar-guide-step' }, icon('check', 14), el('span', { text: t('adhkar.guideStep1') })),
+        el('div', { class: 'adhkar-guide-step' }, icon('speaker', 14), el('span', { text: t('adhkar.guideStep2') })),
+        el('div', { class: 'adhkar-guide-step' }, icon('checkCircle', 14), el('span', { text: t('adhkar.guideStep3') })),
+      ),
+      el(
+        'div',
+        { class: 'adhkar-progress-box' },
+        el(
+          'div',
+          { class: 'adhkar-progress-label' },
+          el('span', { text: t('adhkar.sectionProgress') }),
+          el('strong', { text: `${completedCount} / ${items.length} (${percent}%)` }),
+        ),
+        el(
+          'div',
+          { class: 'adhkar-progress-track', attrs: { 'aria-hidden': 'true' } },
+          el('span', {
+            class: 'adhkar-progress-fill',
+            attrs: { style: `width: ${percent}%;` },
+          }),
+        ),
+      ),
+    );
+
+    const listContainer = el('div', { class: 'stack sm' });
 
     for (const item of items) {
       const current = adhkarCounts[item.id] || 0;
       const isDone = current >= item.count;
-      if (isDone) completedCount++;
 
       const title =
         ctx.locale === 'ar' ? item.titleAr : ctx.locale === 'en' ? item.titleEn : item.titleFr;
@@ -916,8 +1480,10 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
             'aria-label': `${title} — ${current}/${item.count}`,
           },
           on: {
-            click: () => {
-              vibrate();
+            click: (e) => {
+              e.stopPropagation();
+              const willComplete = current + 1 >= item.count;
+              vibrate(willComplete);
               if (current < item.count) {
                 adhkarCounts[item.id] = current + 1;
               } else {
@@ -929,12 +1495,48 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
           },
         },
         isDone ? icon('check', 16) : null,
-        isDone ? t('adhkar.completed') : `${current} / ${item.count}`,
+        isDone ? t('adhkar.completed') : `👆 ${t('adhkar.tapToCount')} (${current}/${item.count})`,
+      );
+
+      const isSpeaking = activeSpeechItem === item.id;
+      const listenBtn = el(
+        'button',
+        {
+          class: `btn sm ${isSpeaking ? 'primary' : 'ghost'}`,
+          attrs: {
+            type: 'button',
+            'aria-label': `${t('adhkar.listen')} — ${title}`,
+          },
+          on: {
+            click: (e) => {
+              e.stopPropagation();
+              toggleSpeech(item.id, item.arabic, () => paintAdhkar());
+            },
+          },
+        },
+        icon(isSpeaking ? 'speakerMute' : 'speaker', 15),
+        isSpeaking ? t('adhan.stop') : t('adhkar.listen'),
       );
 
       const card = el(
         'article',
-        { class: `card tight stack xs adhkar-card ${isDone ? 'is-completed' : ''}` },
+        {
+          class: `card tight stack xs adhkar-card ${isDone ? 'is-completed' : ''}`,
+          attrs: { style: 'cursor: pointer;' },
+          on: {
+            click: () => {
+              const willComplete = current + 1 >= item.count;
+              vibrate(willComplete);
+              if (current < item.count) {
+                adhkarCounts[item.id] = current + 1;
+              } else {
+                adhkarCounts[item.id] = 0;
+              }
+              saveAdhkarCounts();
+              paintAdhkar();
+            },
+          },
+        },
         el(
           'div',
           { class: 'row-between align-center' },
@@ -953,12 +1555,36 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
           'div',
           { class: 'row-between align-center', attrs: { style: 'margin-top: var(--space-2)' } },
           el('span', { class: 'tiny muted', text: item.reference }),
-          tapBtn,
+          el('div', { class: 'btn-row align-center', attrs: { style: 'gap: 6px;' } }, listenBtn, tapBtn),
         ),
       );
 
       listContainer.appendChild(card);
     }
+
+    const isAllDone = completedCount === items.length && items.length > 0;
+    if (isAllDone) {
+      try {
+        if (adhkarCategory === 'morning') sessionStorage.setItem('azan.adhkar_sabah_done', 'true');
+        if (adhkarCategory === 'evening') sessionStorage.setItem('azan.adhkar_masaa_done', 'true');
+        spiritualHub.update(computeTodaySpiritualProgress(ctx.store));
+      } catch {
+        // ignore storage errors
+      }
+    }
+    const celebrationCard = isAllDone
+      ? el(
+          'div',
+          {
+            class: 'card ok stack xs center',
+            attrs: {
+              style:
+                'background: rgba(30, 126, 84, 0.12); border: 1px solid var(--color-primary); margin-block: var(--space-2);',
+            },
+          },
+          el('strong', { class: 'small', text: `🎉 ${t('adhkar.sectionMubarak')}` }),
+        )
+      : null;
 
     // Header controls with reset button
     const headerRow = el(
@@ -996,7 +1622,9 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
       ),
     );
 
-    adhkarPanel.append(categoryTabs, headerRow, listContainer);
+    adhkarPanel.append(categoryTabs, guideBox, headerRow);
+    if (celebrationCard) adhkarPanel.append(celebrationCard);
+    adhkarPanel.append(listContainer);
   }
 
   // ---------------------------------------------------------------- khatmah
@@ -1038,6 +1666,38 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
         el('span', { class: 'pill ok', text: t('khatmah.hizbMorning', { n: dailyHizb.morningHizb }) }),
         el('span', { class: 'pill ok', text: t('khatmah.hizbEvening', { n: dailyHizb.eveningHizb }) }),
       ),
+    );
+
+    // Direct access to Ayat Al-Fadila
+    const ayatFadilaCard = el(
+      'div',
+      {
+        class: 'card row-between align-center',
+        attrs: {
+          style:
+            'cursor: pointer; background: linear-gradient(135deg, rgba(30,126,84,0.12), rgba(228,203,147,0.15)); border: 1px solid var(--border); margin-block: var(--space-2);',
+          role: 'button',
+          tabindex: '0',
+        },
+        on: {
+          click: () => {
+            adhkarCategory = 'ayat-fadila';
+            counterPanel.hidden = true;
+            adhkarPanel.hidden = false;
+            khatmahPanel.hidden = true;
+            sessionsPanel.hidden = true;
+            historyPanel.hidden = true;
+            paintAdhkar();
+          },
+        },
+      },
+      el(
+        'div',
+        { class: 'stack xxs' },
+        el('strong', { class: 'small', text: ctx.locale === 'ar' ? '📖 آيات الفضيلة والبركة' : '📖 Versets de Vertu (Ayat Al-Fadila)' }),
+        el('span', { class: 'tiny muted', text: ctx.locale === 'ar' ? 'آية الكرسي، خواتيم البقرة، الكهف، الفاتحة والمعوذات' : 'Ayat Al-Kursi, Khawatim Al-Baqarah, Al-Kahf & Al-Mu‘awwidhat' }),
+      ),
+      el('span', { class: 'pill ok small', text: ctx.locale === 'ar' ? 'تلاوة' : 'Lire' }),
     );
 
     // Smart Progress Card
@@ -1165,7 +1825,7 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
       const tile = el(
         'button',
         {
-          class: `btn ${isRead ? 'primary' : 'ghost'} sm`,
+          class: `btn ${isRead ? 'primary' : 'ghost'} sm khatmah-hizb-btn ${isRead ? 'is-read' : ''}`,
           attrs: {
             type: 'button',
             'aria-label': `${ctx.locale === 'ar' ? 'الحزب' : 'Hizb'} ${h} ${isRead ? '✓' : ''}`,
@@ -1200,7 +1860,7 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
       grid,
     );
 
-    khatmahPanel.append(goalTabs, mosqueCard, progressCard, gridCard);
+    khatmahPanel.append(goalTabs, mosqueCard, ayatFadilaCard, progressCard, gridCard);
   }
 
   // ---------------------------------------------------------------- history
@@ -1267,6 +1927,12 @@ export function tasbihScreen(ctx: AppContext): HTMLElement {
   paintCounter();
   paintSessions();
   paintHistory();
+
+  ctx.registerCleanup(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
 
   return root;
 }

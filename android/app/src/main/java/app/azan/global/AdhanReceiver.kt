@@ -74,9 +74,13 @@ class AdhanReceiver : BroadcastReceiver() {
                 }
             }
 
-            // Automatically silence the phone during prayer time (Masjid Mode)
+            // Automatically silence the phone during prayer time (Masjid Mode) if configured
             try {
-                AutoSilenceReceiver.scheduleAutoSilence(context, 20)
+                val silencePrefs = context.getSharedPreferences("auto_silence_prefs", Context.MODE_PRIVATE)
+                val duration = silencePrefs.getInt("mosque_mode_minutes", 0)
+                if (duration > 0) {
+                    AutoSilenceReceiver.scheduleAutoSilence(context, duration)
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "Cannot trigger auto-silence: ${e.message}")
             }

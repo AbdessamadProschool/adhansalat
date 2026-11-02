@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T20:37:58.327Z",
+  "generatedAt": "2026-11-01T02:50:51.657Z",
   "inputs": {
     "morocco": "data-source\\MA.txt",
     "moroccoLines": 153872,
@@ -589,8 +589,8 @@
   "outputs": {
     "core": {
       "file": "src/core/data/cities-core.json",
-      "bytes": 318391,
-      "cities": 1996
+      "bytes": 482098,
+      "cities": 2866
     },
     "index": {
       "file": "public/data/cities/index.json",
@@ -608,10 +608,10 @@
   },
   "counts": {
     "morocco": 46039,
-    "world": 1696,
-    "total": 47735,
+    "world": 2566,
+    "total": 48605,
     "countries": 244,
-    "bundled": 1996,
+    "bundled": 2866,
     "notBundled": 45739
   }
 }

@@ -62,6 +62,8 @@ export interface Settings {
   showHijri: boolean;
   hijriAdjustment: number;
   imsakOffsetMinutes: number;
+  /** Automatic silence mode after Adhan in minutes (0 = disabled, 15, 20, 30). */
+  mosqueModeMinutes: number;
   notificationsWanted: boolean;
   sounds: SoundMeta[];
   /** When set, Fajr uses this sound instead of its own per-prayer choice. */
@@ -116,12 +118,12 @@ export const SOUND_URL: Record<string, string> = {
 /** Built-in ids that can really be played; used to migrate stale preferences. */
 const PLAYABLE_SOUND_IDS = new Set([...Object.keys(SOUND_URL), 'none']);
 
-function defaultPreference(soundId: string): PrayerPreference {
+function defaultPreference(soundId: string, preReminderMinutes = 15): PrayerPreference {
   return {
     enabled: true,
     audioEnabled: true,
     soundId,
-    preReminderMinutes: 0,
+    preReminderMinutes,
     vibration: true,
     notificationOnly: false,
   };
@@ -129,11 +131,11 @@ function defaultPreference(soundId: string): PrayerPreference {
 
 export function defaultPreferences(): PrayerPreferences {
   return {
-    fajr: { ...defaultPreference(DEFAULT_SOUND_ID), preReminderMinutes: 0 },
-    dhuhr: defaultPreference(DEFAULT_SOUND_ID),
-    asr: defaultPreference(DEFAULT_SOUND_ID),
-    maghrib: defaultPreference(DEFAULT_SOUND_ID),
-    isha: defaultPreference(DEFAULT_SOUND_ID),
+    fajr: { ...defaultPreference(DEFAULT_SOUND_ID, 20) },
+    dhuhr: defaultPreference(DEFAULT_SOUND_ID, 15),
+    asr: defaultPreference(DEFAULT_SOUND_ID, 15),
+    maghrib: defaultPreference(DEFAULT_SOUND_ID, 15),
+    isha: defaultPreference(DEFAULT_SOUND_ID, 15),
   };
 }
 
@@ -160,6 +162,7 @@ export function defaultSettings(): Settings {
     showHijri: true,
     hijriAdjustment: 0,
     imsakOffsetMinutes: 10,
+    mosqueModeMinutes: 0,
     notificationsWanted: true,
     sounds: [],
     fajrSoundOverride: null,
